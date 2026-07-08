@@ -1,35 +1,28 @@
 
 import { Scissors, Share2, Star, Award } from 'lucide-react';
+import img from "../../assets/gonza.png";
+import img2 from "../../assets/valen.png";
 
  const StaffSection: React.FC = () => {
   // Acá provisoriamente ponemos datos fijos, pero después lo conectamos directo con tu base de MongoDB
   const barberos = [
     {
       id: 1,
-      nombre: "Mateo 'Navaja' Silva",
+      nombre: "Gonza Silvani",
       rol: "Master Barber & Fundador",
       especialidad: "Degradés visagistas & Barba tradicional",
-      foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1000&auto=format&fit=crop",
+      foto: img,
       val: "4.9",
       exp: "8 años exp."
     },
     {
       id: 2,
-      nombre: "Lucas 'Fade' Benítez",
+      nombre: "Valentino Brayn",
       rol: "Estilista Senior",
       especialidad: "Taper fade, Freestyle & Colorimetría",
-      foto: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop",
+      foto: img2,
       val: "5.0",
       exp: "5 años exp."
-    },
-    {
-      id: 3,
-      nombre: "Gonzalo 'Razor' Paz",
-      rol: "Barber Specialist",
-      especialidad: "Cortes clásicos a tijera & Skin Fade",
-      foto: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop",
-      val: "4.8",
-      exp: "4 años exp."
     }
   ];
 
@@ -52,11 +45,11 @@ import { Scissors, Share2, Star, Award } from 'lucide-react';
       </div>
 
       {/* Grilla de Barberos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="flex justify-center gap-6">
         {barberos.map((b) => (
           <div 
             key={b.id}
-            className="bg-zinc-900/40 border border-white/5 rounded-[2rem] overflow-hidden group hover:border-orange-500/40 transition-all duration-300 flex flex-col justify-between"
+            className="bg-zinc-900/40 border border-white/5 rounded-[2rem] w-full max-w-xl overflow-hidden group hover:border-orange-500/40 transition-all duration-300 flex flex-col justify-between"
           >
             {/* Foto del barbero con degradado oscuro abajo */}
             <div className="relative h-72 w-full overflow-hidden bg-zinc-800">

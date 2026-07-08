@@ -3,3 +3,25 @@
 @theme {
   --font-sans: 'Outfit', sans-serif;
 }
+
+
+/* 🔥 ANIMACIÓN PARA LAS TIJERAS DE KATHARA */
+@keyframes snipTop {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(20deg); } /* La hoja de arriba baja para cortar */
+}
+
+@keyframes snipBottom {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-20deg); } /* La hoja de abajo sube para cortar */
+}
+
+.animate-snip-top {
+  animation: snipTop 0.8s ease-in-out infinite;
+  transform-origin: 50% 50%; /* El eje es el tornillo del centro */
+}
+
+.animate-snip-bottom {
+  animation: snipBottom 0.8s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}

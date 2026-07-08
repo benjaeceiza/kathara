@@ -2,52 +2,52 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { RutaPrivada } from './components/RutaPrivada';
 import { RutaPublica } from './components/RutaPublica';
 import AppLayout from './layouts/AppLayout';
-import AuthPage from './pages/AuthPage';
+import AuthPage from './pages/auth/AuthPage';
+import { HomePage } from './pages/home/HomePage';
+import MisTurnosPage from './pages/clientes/mis-turnos/MisTurnosPage';
+import PerfilPage from './pages/clientes/perfil/PerfilPage';
+import ServiciosStaffPage from './pages/servicios/ServiciosStaffPage'; 
+import PortafolioBarberoPage from './pages/staff/PortafolioBarberoPage';
 import { useAuthStore } from './store/authStore';
+import { Loader } from './components/Loader';
 
 function App() {
   const logout = useAuthStore((state) => state.logout);
-  const login = useAuthStore((state) => state.login);
 
   return (
     <BrowserRouter>
+      <Loader />
+
       <Routes>
-        
+
         {/* ========================================================= */}
-        {/* RUTAS PÚBLICAS (Solo accesibles si NO estás logueado)     */}
+        {/* 1. RUTAS DE AUTH (Públicas, SIN Sidebar ni Layout)        */}
         {/* ========================================================= */}
         <Route element={<RutaPublica />}>
-          <Route path="/login" element={
-            <AuthPage alLoguearse={() => {
-              // El login ahora lo maneja Zustand desde el AuthPage, esto es solo por compatibilidad
-              const token = localStorage.getItem('token_barberia');
-              const usr = JSON.parse(localStorage.getItem('usuario_barberia') || '{}');
-              if (token && usr) login(token, usr);
-            }} />
-          } />
+          <Route path="/login" element={<AuthPage alLoguearse={() => { }} />} />
         </Route>
 
 
         {/* ========================================================= */}
-        {/* RUTAS PRIVADAS (Requieren pulserita/token)   */}
+        {/* 2. EL LAYOUT GENERAL (Todas estas rutas TIENEN Sidebar)    */}
         {/* ========================================================= */}
-        <Route element={<RutaPrivada />}>
-          {/* Todas las rutas privadas van envueltas en tu AppLayout con el Sidebar y el Footer */}
-          <Route element={<AppLayout alCerrarSesion={logout} />}>
-            
-            {/* Página Principal */}
-            <Route path="/" element={<div />} /> {/* El AppLayout ya carga el Home por defecto */}
-            
-            {/* Acá iremos sumando las próximas pantallas: */}
-            {/* <Route path="/reservar" element={<ReservarPage />} /> */}
-            {/* <Route path="/mis-turnos" element={<MisTurnosPage />} /> */}
-            {/* <Route path="/perfil" element={<ProfilePage />} /> */}
-            
+        <Route element={<AppLayout alCerrarSesion={logout} />}>
+
+          {/* A) RUTAS PÚBLICAS DEL SALÓN (Las ve un visitante o un VIP) */}
+          <Route path="/" element={<HomePage />} />
+          <Route path="/servicios" element={<ServiciosStaffPage />} />
+          <Route path="/staff/:id" element={<PortafolioBarberoPage />} /> 
+
+          {/* B) RUTAS PRIVADAS VIP (Solo si están logueados) */}
+          <Route element={<RutaPrivada />}>
+            <Route path="/mis-turnos" element={<MisTurnosPage />} />
+            <Route path="/perfil" element={<PerfilPage />} />
+            {/* Acordate que luego acá sumaremos: <Route path="/reservar" element={<WizardReservasPage />} /> */}
           </Route>
+
         </Route>
 
-
-        {/* Cualquier URL fantasma que pongan en el navegador los redirige al Home */}
+        {/* Cualquier ruta inventada te tira al Home */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>

@@ -9,8 +9,8 @@ export const HeroSection: React.FC = () => {
             className="relative w-full min-h-[82vh] rounded-[2.5rem] overflow-hidden p-8 sm:p-14 lg:p-16 flex flex-col justify-between border border-white/10 shadow-2xl bg-cover bg-center bg-no-repeat">
 
             {/* Luces de fondo difuminadas (Ambient Glows) */}
-            <div className="absolute inset-0 bg-zinc-600/20 backdrop-blur-[2px] pointer-events-none"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/60 to-transparent pointer-events-none"></div>
+            <div className="absolute  bg-zinc-600/20  pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/50 to-transparent pointer-events-none"></div>
             {/* Header del Hero */}
             <div className="flex flex-wrap gap-4 justify-between items-center z-10">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900/80 backdrop-blur-md border border-white/10 text-xs font-bold text-orange-400">

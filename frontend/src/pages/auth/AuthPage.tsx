@@ -10,8 +10,8 @@ import {
   ShieldCheck,
   Star
 } from 'lucide-react';
-import logo from "../assets/logo.png";
-import { useAuthStore } from '../store/authStore';
+import logo from "../../assets/logo.png";
+import { useAuthStore } from '../../store/authStore';
 import { useNavigate } from 'react-router-dom';
 
 interface AuthPageProps {
