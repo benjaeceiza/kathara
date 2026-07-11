@@ -49,7 +49,7 @@ import img2 from "../../assets/valen.png";
         {barberos.map((b) => (
           <div 
             key={b.id}
-            className="bg-zinc-900/40 border border-white/5 rounded-[2rem] w-full max-w-xl overflow-hidden group hover:border-orange-500/40 transition-all duration-300 flex flex-col justify-between"
+            className="bg-zinc-900/40 border border-white/5 rounded-[2rem] w-full max-w-xs overflow-hidden group hover:border-orange-500/40 transition-all duration-300 flex flex-col justify-between"
           >
             {/* Foto del barbero con degradado oscuro abajo */}
             <div className="relative h-72 w-full overflow-hidden bg-zinc-800">

@@ -21,7 +21,6 @@ export const registrarNuevoUsuario = async (datos: RegistroData) => {
     throw new Error('El email ya está registrado');
   }
 
-  // Encriptamos la clave si es que mandó una (por si en el futuro usa Google Auth)
   if (datos.password) {
     const salt = await bcrypt.genSalt(10);
     datos.password = await bcrypt.hash(datos.password, salt);
@@ -30,7 +29,6 @@ export const registrarNuevoUsuario = async (datos: RegistroData) => {
   const nuevoUsuario = new Usuario(datos);
   await nuevoUsuario.save();
 
-  // Borramos el password antes de devolver el objeto para no mostrarlo
   const usuarioLimpio = nuevoUsuario.toObject();
   delete usuarioLimpio.password;
 
@@ -39,19 +37,66 @@ export const registrarNuevoUsuario = async (datos: RegistroData) => {
 
 // 2. Lógica de Login
 export const loginUsuario = async (datos: LoginData) => {
-  // Verificamos si existe el usuario
   const usuario = await Usuario.findOne({ email: datos.email });
   if (!usuario || !usuario.password) {
     throw new Error('Credenciales inválidas');
   }
 
-  // Comparamos la contraseña que escribió con el hash guardado en MongoDB
   const esPasswordValido = await bcrypt.compare(datos.password || '', usuario.password);
   if (!esPasswordValido) {
     throw new Error('Credenciales inválidas');
   }
 
-  // Creamos el Token JWT (la pulserita VIP que dura 7 días)
+  const token = jwt.sign(
+    { id: usuario._id, rol: usuario.rol },
+    process.env.JWT_SECRET as string,
+    { expiresIn: '7d' }
+  );
+
+  const usuarioLimpio = usuario.toObject();
+  delete usuarioLimpio.password;
+
+  return {
+    usuario: usuarioLimpio,
+    token
+  };
+};
+
+// 🔥 3. Login con Google usando Access Token
+export const loginConGoogle = async (accessToken: string) => {
+  // 1. Buscamos el perfil del usuario directo en la API de Google
+  const respuesta = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` }
+  });
+
+  if (!respuesta.ok) {
+    throw new Error('El token de Google no es válido o expiró');
+  }
+
+  const payload = await respuesta.json();
+  const { email, given_name, family_name, picture } = payload;
+
+  // 2. Buscamos si el usuario ya existe
+  let usuario = await Usuario.findOne({ email });
+
+  // 3. Si no existe, lo creamos automáticamente (Registro express)
+  if (!usuario) {
+    const salt = await bcrypt.genSalt(10);
+    const passwordGenerado = await bcrypt.hash('@@@google_auth_placeholder_pwd@@@', salt);
+
+    usuario = new Usuario({
+      nombre: given_name,
+      apellido: family_name || '',
+      email: email,
+      password: passwordGenerado, 
+      rol: 'cliente',
+      avatar: picture 
+    });
+    
+    await usuario.save();
+  }
+
+  // 4. Generamos TU propio Token JWT (reutilizando tu lógica)
   const token = jwt.sign(
     { id: usuario._id, rol: usuario.rol },
     process.env.JWT_SECRET as string,

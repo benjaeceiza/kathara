@@ -23,3 +23,26 @@ export const loginUsuario = async (req: Request, res: Response) => {
     res.status(401).json({ mensaje: error.message || 'Error en el login' });
   }
 };
+
+
+export const loginGoogle = async (req: Request, res: Response) => {
+  try {
+    // Extraemos el token que el frontend (React) nos va a mandar en el body
+    const { token_google } = req.body;
+    
+    if (!token_google) {
+       res.status(400).json({ mensaje: 'No se recibió el token de Google' });
+       return;
+    }
+
+    const resultado = await authService.loginConGoogle(token_google);
+    
+    res.status(200).json({
+      mensaje: '¡Login con Google exitoso!',
+      usuario: resultado.usuario,
+      token: resultado.token
+    });
+  } catch (error: any) {
+    res.status(401).json({ mensaje: error.message || 'Error al autenticar con Google' });
+  }
+};

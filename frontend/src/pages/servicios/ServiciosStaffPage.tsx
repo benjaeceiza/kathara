@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Scissors, 
@@ -10,6 +10,8 @@ import {
 
 import imgGonza from "../../assets/gonza.png";
 import imgValen from "../../assets/valen.png";
+import { getServicios } from '../../services/servicios.service';
+import { getStaff } from '../../services/staff.service';
 
 // 1. TIPADOS DE DATOS (INTERFACES)
 interface Servicio {
@@ -31,62 +33,60 @@ interface Barbero {
   especialidades: string[];
 }
 
- const ServiciosStaffPage: React.FC = () => {
-  // 2. CATÁLOGO DE SERVICIOS KATHARA
-  const servicios: Servicio[] = [
-    {
-      id: "SRV-1",
-      nombre: "Skin Fade + Perfilado de Barba",
-      descripcion: "Degradado perfecto a cero con máquina y navaja, diseño de contornos faciales y ritual con toalla caliente y aceites esenciales.",
-      duracion: "50 min",
-      precio: 12000,
-      destacado: true
-    },
-    {
-      id: "SRV-2",
-      nombre: "Corte Clásico & Texturizado a Tijera",
-      descripcion: "Corte de autor adaptado a la forma de tu cráneo y tipo de cabello. Incluye lavado premium con shampoo mentolado y peinado con cera mate.",
-      duracion: "40 min",
-      precio: 10000
-    },
-    {
-      id: "SRV-3",
-      nombre: "Ritual de Barba Tradicional",
-      descripcion: "El clásico afeitado italiano. Vapor de ozono para abrir poros, espuma templada, navaja libre y masaje facial post-afeitado.",
-      duracion: "35 min",
-      precio: 8500
-    },
-    {
-      id: "SRV-4",
-      nombre: "Taper Fade & Freestyle Design",
-      descripcion: "Degradado en patillas y nuca con líneas o diseños geométricos personalizados en los laterales. Ideal para un look urbano.",
-      duracion: "45 min",
-      precio: 11000
-    }
-  ];
+const ServiciosStaffPage: React.FC = () => {
+  // 2. ESTADOS PARA GUARDAR LA DATA DE MONGODB
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [staff, setStaff] = useState<Barbero[]>([]);
+  const [cargando, setCargando] = useState(true);
 
-  // 3. STAFF DE MAESTROS BARBEROS
-  const staff: Barbero[] = [
-    {
-      id: "ST-1",
-      nombre: "Gonza Silvani",
-      apodo: "Negro",
-      rol: "Director & Master Barber",
-      avatar: imgGonza,
-      bio: "Fundador de Kathara. Con más de 8 años en la industria, Mateo se especializa en cortes milimétricos y el rescate del afeitado clásico a navaja.",
-      especialidades: ["Skin Fade", "Barba Tradicional", "Tijera Avanzada"]
-    },
-    {
-      id: "ST-2",
-      nombre: "Valentino Brayn",
-      apodo: "Fade",
-      rol: "Urban Style Specialist",
-      avatar: imgValen,
-      bio: "El rey del degradado y los peinados con textura. Lucas transforma cualquier cabello rebelde en una obra de arte moderna y fácil de peinar.",
-      especialidades: ["Taper Fade", "Texturizado", "Diseños Freestyle"]
-    }
-  ];
+  // 3. EFECTO PARA TRAER LOS DATOS AL ABRIR LA PÁGINA
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const [dataServicios, dataStaff] = await Promise.all([
+          getServicios(),
+          getStaff()
+        ]);
 
+        // Adaptamos los datos para que el _id de Mongo coincida con el id de tu diseño
+        const serviciosAdaptados = dataServicios.map((s: any) => ({
+          ...s,
+          id: s._id || s.id
+        }));
+
+        const staffAdaptado = dataStaff.map((b: any) => ({
+          ...b,
+          id: b._id || b.id,
+          // Si el backend no trae avatar, le dejamos uno por defecto para que no se rompa tu diseño
+          avatar: b.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
+        }));
+
+        setServicios(serviciosAdaptados);
+        setStaff(staffAdaptado);
+      } catch (error) {
+        console.error("Error al cargar la base de datos:", error);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    cargarDatos();
+  }, []);
+
+  // Pantalla de carga ultra simple para no romper tu estética
+  if (cargando) {
+    return (
+      <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
+        <p className="text-orange-500 font-bold uppercase tracking-widest text-xs animate-pulse">
+          Cargando catálogo...
+        </p>
+      </div>
+    );
+  }
+
+  // =========================================================
+  // TU DISEÑO ORIGINAL EXACTAMENTE IGUAL DESDE ACÁ PARA ABAJO
+  // =========================================================
   return (
     <div className="space-y-20 pb-24 max-w-6xl mx-auto animate-fadeIn">
       
@@ -230,7 +230,7 @@ interface Barbero {
 
                 {/* Pastillas de especialidades */}
                 <div className="flex flex-wrap gap-1.5 pt-2">
-                  {b.especialidades.map((esp, i) => (
+                  {b.especialidades?.map((esp, i) => (
                     <span key={i} className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-zinc-800/80 text-zinc-300 border border-white/5">
                       {esp}
                     </span>

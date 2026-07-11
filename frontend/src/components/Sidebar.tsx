@@ -1,6 +1,6 @@
-
 import { Link, useNavigate, useLocation } from 'react-router-dom'; 
-import { Home, Calendar, Scissors, User, LogOut, X, History } from 'lucide-react';
+// 🔥 IMPORTAMOS LAYOUTDASHBOARD
+import { Home, Calendar, Scissors, User, LogOut, X, History, LayoutDashboard } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import logo from '../assets/logo.png';
 
@@ -100,10 +100,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ alCerrarSesion, menuAbierto, c
               <span className="text-sm">Reservar Turno</span>
             </Link>
 
-            <a href="/servicios" onClick={cerrarMenu} className="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-zinc-400 hover:bg-white/5 hover:text-white font-medium transition-all group">
-              <Scissors className="w-5 h-5 shrink-0 text-zinc-500 group-hover:text-orange-400 transition-colors" />
+            <Link to="/servicios" onClick={cerrarMenu} className={getClasesLink('/servicios')}>
+              <Scissors className={getClasesIcono('/servicios')} />
               <span className="text-sm">Servicios & Staff</span>
-            </a>
+            </Link>
 
             {/* 2. RUTAS PRIVADAS (Solo si inició sesión) */}
             {estaLogueado && (
@@ -118,6 +118,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ alCerrarSesion, menuAbierto, c
                   <span className="text-sm">Mi Perfil</span>
                 </Link>
               </>
+            )}
+
+            {/* ========================================================= */}
+            {/* 3. BOTÓN VIP ADMINISTRADOR                                */}
+            {/* ========================================================= */}
+            {estaLogueado && usuario?.rol === 'admin' && (
+              <Link 
+                to="/admin" 
+                onClick={cerrarMenu}
+                className="flex items-center gap-4 px-4 py-3.5 mt-6 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-400 hover:bg-orange-500 hover:text-black transition-all font-black uppercase tracking-widest shadow-[0_0_15px_rgba(249,115,22,0.1)] hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] animate-fadeIn"
+              >
+                <LayoutDashboard className="w-5 h-5 shrink-0" />
+                <span className="text-[11px]">Panel Admin</span>
+              </Link>
             )}
 
           </nav>
