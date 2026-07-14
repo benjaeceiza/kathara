@@ -3,9 +3,19 @@ import * as turnoService from '../services/turnoService';
 
 export const crearTurno = async (req: Request, res: Response) => {
   try {
-    const turno = await turnoService.reservarTurno(req.body);
+    // Extraemos el ID del cliente logueado desde el Token JWT
+    const clienteId = (req as any).usuario.id; 
+
+    // Unimos los datos del body con el ID del cliente
+    const datosReserva = {
+      ...req.body,
+      clienteId
+    };
+
+    const turno = await turnoService.reservarTurno(datosReserva);
+
     res.status(201).json({
-      mensaje: '¡Turno reservado con éxito! Pendiente de seña.',
+      mensaje: '¡Turno reservado con éxito! Te esperamos en el local.',
       turno
     });
   } catch (error: any) {
@@ -16,7 +26,7 @@ export const crearTurno = async (req: Request, res: Response) => {
 export const listarAgenda = async (req: Request, res: Response) => {
   try {
     const { peluqueroId } = req.params;
-    const { fecha } = req.query; // Esperamos ?fecha=2026-07-03 en la URL
+    const { fecha } = req.query; 
 
     if (!fecha) {
       res.status(400).json({ mensaje: 'Falta especificar la fecha' });

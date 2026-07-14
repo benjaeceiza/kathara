@@ -7,7 +7,7 @@ export const getStaff = async () => {
     if (!respuesta.ok) throw new Error('Error al obtener el staff');
     return await respuesta.json();
   } catch (error) {
-    console.error("Error en getStaff:", error);
+    console.error("Error en getPeluqueros:", error);
     return [];
   }
 };

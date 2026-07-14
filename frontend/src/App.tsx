@@ -11,6 +11,10 @@ import PortafolioBarberoPage from './pages/staff/PortafolioBarberoPage';
 import { useAuthStore } from './store/authStore';
 import { Loader } from './components/Loader';
 import { WizardReservasPage } from './pages/clientes/reservar/WizardReservasPage';
+import { DashboardAdmin } from './pages/admin/DashboardAdmin';
+import { TurnosAdminPage } from './pages/admin/TurnosAdminPage';
+import { ServiciosAdminPage } from './pages/admin/ServiciosAdminPage';
+import { StaffAdminPage } from './pages/admin/StaffAdminPage';
 
 // 🔥 IMPORTS DEL PANEL DE ADMINISTRADOR
 import AdminRoute from './components/AdminRoute';
@@ -18,6 +22,7 @@ import AdminLayout from './layouts/AdminLayout';
 
 // 🔥 IMPORT DE GOOGLE OAUTH
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ClientesAdminPage } from './pages/admin/ClientesAdminPage';
 
 function App() {
   const logout = useAuthStore((state) => state.logout);
@@ -64,20 +69,11 @@ function App() {
           <Route element={<AdminRoute />}>
             {/* Todas las rutas acá adentro usan el layout de Admin (Barra lateral oscura) */}
             <Route path="/admin" element={<AdminLayout />}>
-
-              {/* Dashboard Principal (lo que se ve al entrar a /admin) */}
-              <Route index element={
-                <div className="animate-fadeIn">
-                  <h1 className="text-3xl font-black text-white">Dashboard Principal</h1>
-                  <p className="text-zinc-400 mt-2">Bienvenido al panel de control de Kathara.</p>
-                </div>
-              } />
-
-              {/* Los futuros ABM de la base de datos */}
-              <Route path="servicios" element={<h1 className="text-white text-2xl font-bold">🛠️ Acá irá el ABM de Servicios</h1>} />
-              <Route path="staff" element={<h1 className="text-white text-2xl font-bold">🛠️ Acá irá el ABM de Staff</h1>} />
-              <Route path="turnos" element={<h1 className="text-white text-2xl font-bold">📅 Acá irá la agenda de Turnos</h1>} />
-
+              <Route index element={<DashboardAdmin />} /> 
+              <Route path="servicios" element={<ServiciosAdminPage />} />
+              <Route path="staff" element={<StaffAdminPage />} />
+              <Route path="turnos" element={<TurnosAdminPage />} />
+              <Route path="clientes" element={<ClientesAdminPage />} />
             </Route>
           </Route>
 

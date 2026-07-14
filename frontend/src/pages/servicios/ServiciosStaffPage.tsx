@@ -18,7 +18,7 @@ interface Servicio {
   id: string;
   nombre: string;
   descripcion: string;
-  duracion: string;
+  duracionMinutos: number;
   precio: number;
   destacado?: boolean;
 }
@@ -151,7 +151,12 @@ const ServiciosStaffPage: React.FC = () => {
 
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-800/80 border border-white/5 text-zinc-300 text-xs font-bold">
                   <Clock className="w-3.5 h-3.5 text-orange-400" />
-                  <span>{s.duracion} aprox.</span>
+               
+                {
+                  s.duracionMinutos > 60
+                    ? <span>{Math.floor(s.duracionMinutos / 60)}h {s.duracionMinutos % 60}m</span>
+                    : <span>{s.duracionMinutos}m</span>
+                }
                 </div>
 
                 <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">

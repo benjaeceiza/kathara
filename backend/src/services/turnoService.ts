@@ -22,24 +22,21 @@ export const reservarTurno = async (datos: ReservaData) => {
 
   // 2. Calcular la fecha y hora de fin del turno
   const inicio = new Date(fechaHoraInicio);
-  const fin = new Date(inicio.getTime() + duracionTotalMinutos * 60000); // 60000 ms = 1 minuto
+  const fin = new Date(inicio.getTime() + duracionTotalMinutos * 60000); 
 
   // 3. Validar disponibilidad del peluquero (Control de solapamiento)
   const turnoSolapado = await Turno.findOne({
     peluqueroId,
-    estado: { $in: ['pendiente', 'confirmado'] }, // Solo molestan los turnos activos
+    estado: { $in: ['pendiente', 'confirmado'] }, 
     fechaHoraInicio: { $lt: fin },
     fechaHoraFin: { $gt: inicio }
   });
 
   if (turnoSolapado) {
-    throw new Error('El peluquero ya tiene un turno reservado en ese horario');
+    throw new Error('El profesional ya tiene un turno reservado en ese horario');
   }
 
-  // 4. Calcular seña (ejemplo: 20% del total, ajustable si querés)
-  const montoSeña = Math.round(precioTotal * 0.20);
-
-  // 5. Crear el turno
+  // 4. Crear el turno (Estado 'confirmado' de una, porque paga en el local)
   const nuevoTurno = new Turno({
     clienteId,
     peluqueroId,
@@ -47,9 +44,8 @@ export const reservarTurno = async (datos: ReservaData) => {
     fechaHoraInicio: inicio,
     fechaHoraFin: fin,
     precioTotal,
-    montoSeña,
-    señaPagada: false,
-    estado: 'pendiente'
+    señaPagada: false, // No hay seña por ahora
+    estado: 'confirmado' 
   });
 
   return await nuevoTurno.save();
