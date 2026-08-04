@@ -1,102 +1,112 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Scissors, Award, ArrowUpRight } from 'lucide-react'; // 🔥 Volamos Share2
+import { getStaff } from '../../services/staff.service'; 
 
-import { Scissors, Share2, Star, Award } from 'lucide-react';
-import img from "../../assets/gonza.png";
-import img2 from "../../assets/valen.png";
+interface IBarbero {
+  _id: string;
+  nombre: string;
+  apellido: string;
+  rol: string;
+  avatar?: string;
+  especialidades?: string[];
+}
 
- const StaffSection: React.FC = () => {
-  // Acá provisoriamente ponemos datos fijos, pero después lo conectamos directo con tu base de MongoDB
-  const barberos = [
-    {
-      id: 1,
-      nombre: "Gonza Silvani",
-      rol: "Master Barber & Fundador",
-      especialidad: "Degradés visagistas & Barba tradicional",
-      foto: img,
-      val: "4.9",
-      exp: "8 años exp."
-    },
-    {
-      id: 2,
-      nombre: "Valentino Brayn",
-      rol: "Estilista Senior",
-      especialidad: "Taper fade, Freestyle & Colorimetría",
-      foto: img2,
-      val: "5.0",
-      exp: "5 años exp."
-    }
-  ];
+const StaffSection: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const [barberos, setBarberos] = useState<IBarbero[]>([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    const fetchStaff = async () => {
+      try {
+        const data = await getStaff();
+        setBarberos(data);
+      } catch (error) {
+        console.error("Error al cargar el staff:", error);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    fetchStaff();
+  }, []);
 
   return (
     <section className="py-6">
       {/* Encabezado de la sección */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs font-bold text-orange-400 uppercase tracking-widest mb-3">
             <Award className="w-3.5 h-3.5" />
             <span>Maestros del Estilo</span>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-            Conocé a nuestro Staff.
+            Nuestro Staff.
           </h2>
         </div>
         <p className="text-zinc-400 text-sm sm:text-base max-w-md">
-          Profesionales apasionados por la precisión milimétrica y el asesoramiento estético. Elegí a tu barbero de confianza.
+          Precisión milimétrica y asesoramiento estético. Elegí a tu profesional de confianza.
         </p>
       </div>
 
-      {/* Grilla de Barberos */}
-      <div className="flex justify-center gap-6">
-        {barberos.map((b) => (
-          <div 
-            key={b.id}
-            className="bg-zinc-900/40 border border-white/5 rounded-[2rem] w-full max-w-xs overflow-hidden group hover:border-orange-500/40 transition-all duration-300 flex flex-col justify-between"
-          >
-            {/* Foto del barbero con degradado oscuro abajo */}
-            <div className="relative h-72 w-full overflow-hidden bg-zinc-800">
-              <img 
-                src={b.foto} 
-                alt={b.nombre} 
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 grayscale group-hover:grayscale-0"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent"></div>
-              
-              {/* Badge de valoración flotante */}
-              <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center gap-1.5 text-xs font-bold text-white">
-                <Star className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
-                <span>{b.val}</span>
-              </div>
-
-              {/* Años de experiencia */}
-              <div className="absolute bottom-4 left-4 px-3 py-1 rounded-full bg-orange-500/20 backdrop-blur-md border border-orange-500/30 text-xs font-bold text-orange-300">
-                {b.exp}
-              </div>
-            </div>
-
-            {/* Información y Botón */}
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <p className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">{b.rol}</p>
-                <h3 className="text-xl font-bold text-white mb-2">{b.nombre}</h3>
-                <p className="text-zinc-400 text-xs leading-relaxed flex items-center gap-2 mb-6">
-                  <Scissors className="w-3.5 h-3.5 text-zinc-500 shrink-0" />
-                  <span>{b.especialidad}</span>
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                <button className="text-xs font-bold text-white hover:text-orange-400 transition-colors uppercase tracking-wider flex items-center gap-1 cursor-pointer">
-                  <span>Reservar con él</span>
-                  <span>➜</span>
-                </button>
-                
-                <a href="#" className="p-2 rounded-full bg-zinc-800/80 hover:bg-orange-500 hover:text-black text-zinc-400 transition-all">
-                  <Share2 className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
+      {cargando ? (
+        <div className="flex justify-center py-10">
+          <div className="animate-pulse flex items-center gap-2 text-zinc-500">
+            <Scissors className="w-5 h-5 animate-spin" /> Cargando profesionales...
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap justify-center gap-6">
+          {barberos.map((b) => (
+            <div 
+              key={b._id}
+              onClick={() => navigate(`/staff/${b._id}`)}
+              className="group relative w-full max-w-[280px] aspect-square rounded-[2rem] overflow-hidden cursor-pointer border border-white/5 hover:border-orange-500/30 transition-all duration-500 shadow-2xl shrink-0"
+            >
+              {/* Foto de fondo */}
+              <img 
+                src={b.avatar || `https://ui-avatars.com/api/?name=${b.nombre}+${b.apellido}&background=27272a&color=f97316`} 
+                alt={`${b.nombre} ${b.apellido}`} 
+                className="absolute inset-0 w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-transform duration-700 ease-out"
+              />
+              
+              {/* Degradado oscuro para que el texto resalte */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500"></div>
+
+              {/* 🔥 ÍCONO DE VER PORTAFOLIO ARRIBA A LA DERECHA */}
+              <div 
+                className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 group-hover:bg-orange-500 backdrop-blur-md text-white group-hover:text-black transition-all z-30 opacity-0 group-hover:opacity-100 translate-y-[-10px] group-hover:translate-y-0"
+                title="Ver portafolio"
+              >
+                <ArrowUpRight className="w-5 h-5" />
+              </div>
+
+              {/* Info del barbero abajo */}
+              <div className="absolute bottom-0 left-0 w-full p-6 flex flex-col justify-end translate-y-3 group-hover:translate-y-0 transition-transform duration-500 z-30">
+                <div className="mb-2">
+                  <span className="inline-block px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-[10px] font-black text-white uppercase tracking-widest">
+                    {b.rol === 'admin' ? 'Master Barber' : 'Estilista'}
+                  </span>
+                </div>
+                
+                <h3 className="text-2xl font-black text-white leading-none mb-1">
+                  {b.nombre} {b.apellido}
+                </h3>
+                
+                {/* Especialidad (aparece en hover) */}
+                <div className="overflow-hidden">
+                  <p className="text-zinc-400 text-xs flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 mt-2">
+                    <Scissors className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                    <span className="line-clamp-1">{b.especialidades?.[0] || 'Corte Clásico & Fade'}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

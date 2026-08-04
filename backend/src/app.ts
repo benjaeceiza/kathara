@@ -5,6 +5,7 @@ import { conectarDB } from './config/db';
 import authRoutes from './routes/authRoutes';
 import serviciosRoutes from './routes/serviciosRoutes';
 import peluquerosRoutes from './routes/peluquerosRoutes';
+import usuariosRoutes from './routes/usuarioRoutes';
 import turnosRoutes from './routes/turnosRoutes';
 
 // Configuramos las variables de entorno
@@ -25,6 +26,7 @@ app.use(express.json()); // Permite leer los JSON que mandemos en el body
 app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
 app.use('/api/peluqueros', peluquerosRoutes);
+app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/turnos', turnosRoutes);
 
 

@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
     id: string;
     rol: string;
   };
+  file?: any; 
 }
 
 export const protegerRuta = (req: AuthRequest, res: Response, next: NextFunction) => {

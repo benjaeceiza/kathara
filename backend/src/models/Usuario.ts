@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// 🔥 1. El sub-esquema para los días de trabajo
+// 1. El sub-esquema para los días de trabajo
 export interface IHorario {
   dia: 'Lunes' | 'Martes' | 'Miércoles' | 'Jueves' | 'Viernes' | 'Sábado' | 'Domingo';
   activo: boolean;
@@ -8,26 +8,30 @@ export interface IHorario {
   horaFin: string;
 }
 
-// 🔥 2. La interfaz unificada
+// 2. La interfaz unificada
 export interface IUsuario extends Document {
   nombre: string;
   apellido: string;
   email: string;
-  password?: string; // Es opcional porque los de Google no tienen clave acá
+  password?: string; 
   rol: 'cliente' | 'peluquero' | 'admin';
   avatar?: string;
   telefono?: string;
   recibeTurnos?: boolean;
   
-  // Exclusivo de Staff (si es cliente, esto queda vacío)
   especialidades?: string[]; 
   horarios?: IHorario[];
   
+  // 🔥 NUEVOS CAMPOS (Reputación y Fidelidad)
+  turnosCompletados: number;
+  faltas: number;
+  exentoSena: boolean;
+
   activo: boolean;
   fechaCreacion: Date;
 }
 
-// 🔥 3. El Schema de Mongoose para el Horario
+// 3. El Schema de Mongoose para el Horario
 const HorarioSchema = new Schema({
   dia: { 
     type: String, 
@@ -39,7 +43,7 @@ const HorarioSchema = new Schema({
   horaFin: { type: String, default: '20:00' }
 }, { _id: false });
 
-// 🔥 4. El Super-Schema Principal
+// 4. El Super-Schema Principal
 const UsuarioSchema: Schema = new Schema({
   nombre: { type: String, required: true, trim: true },
   apellido: { type: String, required: true, trim: true },
@@ -51,6 +55,11 @@ const UsuarioSchema: Schema = new Schema({
   recibeTurnos: { type: Boolean, default: false },
   especialidades: [{ type: String }],
   horarios: { type: [HorarioSchema], default: [] },
+  
+  // 🔥 VALORES POR DEFECTO PARA LA REPUTACIÓN
+  turnosCompletados: { type: Number, default: 0 },
+  faltas: { type: Number, default: 0 },
+  exentoSena: { type: Boolean, default: false },
   
   activo: { type: Boolean, default: true },
   fechaCreacion: { type: Date, default: Date.now }

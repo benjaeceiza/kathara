@@ -5,11 +5,10 @@ import {
   User, 
   Clock, 
   Sparkles, 
-  ArrowRight 
+  ArrowRight,
+  Star
 } from 'lucide-react';
 
-import imgGonza from "../../assets/gonza.png";
-import imgValen from "../../assets/valen.png";
 import { getServicios } from '../../services/servicios.service';
 import { getStaff } from '../../services/staff.service';
 
@@ -34,12 +33,10 @@ interface Barbero {
 }
 
 const ServiciosStaffPage: React.FC = () => {
-  // 2. ESTADOS PARA GUARDAR LA DATA DE MONGODB
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [staff, setStaff] = useState<Barbero[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  // 3. EFECTO PARA TRAER LOS DATOS AL ABRIR LA PÁGINA
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -48,7 +45,6 @@ const ServiciosStaffPage: React.FC = () => {
           getStaff()
         ]);
 
-        // Adaptamos los datos para que el _id de Mongo coincida con el id de tu diseño
         const serviciosAdaptados = dataServicios.map((s: any) => ({
           ...s,
           id: s._id || s.id
@@ -57,7 +53,6 @@ const ServiciosStaffPage: React.FC = () => {
         const staffAdaptado = dataStaff.map((b: any) => ({
           ...b,
           id: b._id || b.id,
-          // Si el backend no trae avatar, le dejamos uno por defecto para que no se rompa tu diseño
           avatar: b.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
         }));
 
@@ -73,36 +68,32 @@ const ServiciosStaffPage: React.FC = () => {
     cargarDatos();
   }, []);
 
-  // Pantalla de carga ultra simple para no romper tu estética
   if (cargando) {
     return (
       <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
-        <p className="text-orange-500 font-bold uppercase tracking-widest text-xs animate-pulse">
-          Cargando catálogo...
+        <p className="text-orange-500 font-bold uppercase tracking-widest text-xs animate-pulse flex items-center gap-2">
+          <Sparkles className="w-4 h-4" /> Cargando catálogo...
         </p>
       </div>
     );
   }
 
-  // =========================================================
-  // TU DISEÑO ORIGINAL EXACTAMENTE IGUAL DESDE ACÁ PARA ABAJO
-  // =========================================================
   return (
-    <div className="space-y-20 pb-24 max-w-6xl mx-auto animate-fadeIn">
+    <div className="space-y-16 pb-20 max-w-5xl mx-auto animate-fadeIn px-4 sm:px-6">
       
       {/* ========================================================= */}
       {/* HERO / ENCABEZADO PRINCIPAL                               */}
       {/* ========================================================= */}
-      <div className="text-center max-w-3xl mx-auto space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-xs font-extrabold text-orange-400 uppercase tracking-widest">
+      <div className="text-center max-w-2xl mx-auto space-y-4 pt-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-[11px] font-black text-orange-400 uppercase tracking-widest transition-all duration-500 hover:scale-105 hover:bg-orange-500/20 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] cursor-default">
           <Sparkles className="w-3.5 h-3.5" />
           <span>Experiencia Kathara</span>
         </div>
-        <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight">
-          Servicios & Staff.
+        <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400 tracking-tight leading-tight transition-all duration-700 hover:from-white hover:to-orange-100">
+          Servicios & <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-500">Staff.</span>
         </h1>
-        <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
-          Conocé nuestros servicios de cuidado personal diseñados para tu desconexión, y a los artesanos barberos encargados de elevar tu estilo al máximo nivel.
+        <p className="text-zinc-400 text-sm leading-relaxed max-w-lg mx-auto">
+          Conocé nuestros servicios diseñados para tu desconexión, y a los artesanos encargados de elevar tu estilo al máximo nivel.
         </p>
       </div>
 
@@ -110,72 +101,73 @@ const ServiciosStaffPage: React.FC = () => {
       {/* ========================================================= */}
       {/* SECCIÓN 1: CATÁLOGO DE SERVICIOS                          */}
       {/* ========================================================= */}
-      <section className="space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <section className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-white/5 pb-4 group/header">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5">
-              <Scissors className="w-6 h-6 text-orange-500" />
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+              <Scissors className="w-5 h-5 text-orange-500 transition-transform duration-500 group-hover/header:rotate-12" />
               <span>Nuestros Servicios</span>
             </h2>
-            <p className="text-zinc-400 text-xs sm:text-sm mt-1">Elegí el servicio perfecto y agendá tu turno online en segundos.</p>
           </div>
-          <span className="text-xs font-bold font-mono text-zinc-500 uppercase tracking-widest">Lista Oficial 2026</span>
+          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Lista Oficial</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
           {servicios.map((s) => (
             <div 
               key={s.id}
-              className={`relative rounded-[2rem] p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 group hover:-translate-y-1 ${
+              // 🔥 Agregamos -translate-y-1.5 y sombra de color al hacer hover en la tarjeta entera
+              className={`group relative rounded-2xl border border-white bg- p-5 flex flex-col justify-between transition-all duration-500 ease-out hover:-translate-y-1.5 ${
                 s.destacado 
-                  ? 'bg-gradient-to-br from-zinc-900 via-zinc-900/90 to-zinc-950 border-2 border-orange-500/50 shadow-2xl shadow-orange-950/20' 
-                  : 'bg-zinc-900/40 border border-white/5 hover:border-white/15'
+                  ? 'bg-gradient-to-br from-zinc-900/80 to-zinc-950 border border-orange-500/30 shadow-lg shadow-orange-500/10 hover:border-orange-500/60 hover:shadow-orange-500/20' 
+                  : 'bg-zinc-900/30 border border-white hover:border-white/20 hover:bg-zinc-900/60 hover:shadow-xl hover:shadow-white/5 '
               }`}
             >
-              {/* Etiqueta Más Solicitado */}
               {s.destacado && (
-                <span className="absolute -top-3.5 right-6 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 text-black font-black text-[10px] uppercase tracking-widest shadow-md">
-                  🔥 Más Solicitado
-                </span>
+                <div className="absolute top-0 right-5 -translate-y-1/2 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-red-500 to-amber-500 flex items-center gap-1 shadow-md hover:scale-105 transition-transform duration-300">
+                  <Star className="w-3 h-3 text-black fill-black" />
+                  <span className="text-black font-black text-[9px] uppercase tracking-widest">Más Solicitado</span>
+                </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex justify-between items-start gap-4">
-                  <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-orange-400 transition-colors">
+                  {/* 🔥 El título se desliza un toque a la derecha al hacer hover */}
+                  <h3 className="text-lg font-black text-white transition-all duration-300 group-hover:text-orange-400 group-hover:translate-x-1">
                     {s.nombre}
                   </h3>
-                  <span className="text-xl sm:text-2xl font-black text-white shrink-0 font-mono">
+                  {/* 🔥 El precio hace un mini zoom desde la derecha */}
+                  <span className="text-lg font-black text-orange-400 shrink-0 transition-transform duration-300 group-hover:scale-110 origin-right">
                     ${s.precio}
                   </span>
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-zinc-800/80 border border-white/5 text-zinc-300 text-xs font-bold">
-                  <Clock className="w-3.5 h-3.5 text-orange-400" />
-               
-                {
-                  s.duracionMinutos > 60
-                    ? <span>{Math.floor(s.duracionMinutos / 60)}h {s.duracionMinutos % 60}m</span>
-                    : <span>{s.duracionMinutos}m</span>
-                }
-                </div>
-
-                <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">
+                <p className="text-zinc-400 text-xs leading-relaxed line-clamp-2 transition-colors duration-300 group-hover:text-zinc-300">
                   {s.descripcion}
                 </p>
+
+                {/* 🔥 El icono del reloj cambia de color a naranja suave en hover */}
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/40 border border-white/5 text-zinc-300 text-[11px] font-bold transition-colors duration-300 group-hover:border-white/10">
+                  <Clock className="w-3 h-3 text-zinc-500 transition-colors duration-300 group-hover:text-orange-400/80" />
+                  {s.duracionMinutos > 60
+                    ? <span>{Math.floor(s.duracionMinutos / 60)}h {s.duracionMinutos % 60}m</span>
+                    : <span>{s.duracionMinutos} min</span>
+                  }
+                </div>
               </div>
 
-              {/* Botón de Acción Directo al Wizard de Reservas */}
-              <div className="pt-8 mt-6 border-t border-white/5">
+              <div className="pt-5 mt-4 border-t border-white/5 transition-colors duration-300 group-hover:border-white/10">
                 <Link 
                   to={`/reservar?servicio=${encodeURIComponent(s.nombre)}`}
-                  className={`w-full py-3.5 px-6 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg ${
+                  className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                     s.destacado
-                      ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-black hover:opacity-90 shadow-orange-500/20'
-                      : 'bg-zinc-800 text-white hover:bg-white hover:text-black'
+                      ? 'bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]'
+                      : 'bg-white/5 text-zinc-300 hover:bg-white hover:text-black hover:shadow-lg'
                   }`}
                 >
-                  <span>Solicitar este servicio</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Reservar ahora</span>
+                  {/* 🔥 La flechita se desliza en hover */}
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
                 </Link>
               </div>
             </div>
@@ -187,70 +179,66 @@ const ServiciosStaffPage: React.FC = () => {
       {/* ========================================================= */}
       {/* SECCIÓN 2: STAFF DE BARBEROS                              */}
       {/* ========================================================= */}
-      <section className="space-y-8 pt-8" id="staff">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-6">
+      <section className="space-y-6 pt-4" id="staff">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 border-b border-white/5 pb-4 group/header">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2.5">
-              <User className="w-6 h-6 text-orange-500" />
+            <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+              <User className="w-5 h-5 text-orange-500 transition-transform duration-500 group-hover/header:-translate-y-1" />
               <span>Maestros Barberos</span>
             </h2>
-            <p className="text-zinc-400 text-xs sm:text-sm mt-1">Hacé clic en cualquier profesional para ver su portafolio de trabajos y biografía.</p>
           </div>
-          <span className="text-xs font-bold font-mono text-zinc-500 uppercase tracking-widest">Staff Oficial</span>
+          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Staff Oficial</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {staff.map((b) => (
             <div 
               key={b.id}
-              className="group relative rounded-[2.5rem] bg-zinc-900/40 border border-white/5 hover:border-orange-500/50 p-6 flex flex-col justify-between transition-all duration-300 hover:-translate-y-2 overflow-hidden shadow-xl"
+              // 🔥 Levantamiento y sombra en el cuadro del barbero
+              className="group relative rounded-3xl bg-zinc-900/30 border border-white/5 hover:border-orange-500/30 p-5 flex flex-col justify-between transition-all duration-500 ease-out hover:-translate-y-1.5 hover:bg-zinc-900/60 hover:shadow-[0_10px_30px_-10px_rgba(249,115,22,0.15)]"
             >
-              {/* Resplandor hover */}
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-orange-500/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-
-              <div className="space-y-6 relative z-10">
-                {/* Foto del Barbero con Anillo Neón */}
-                <div className="relative w-full aspect-square rounded-3xl overflow-hidden bg-zinc-800 border border-white/10">
-                  <img 
-                    src={b.avatar} 
-                    alt={b.nombre} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
-                    <span className="px-3 py-1 rounded-full bg-orange-500/90 text-black font-black text-[10px] uppercase tracking-widest shadow-lg">
-                      "{b.apodo}"
-                    </span>
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-center gap-4">
+                  {/* 🔥 Marco del avatar que se ilumina */}
+                  <div className="relative w-16 h-16 shrink-0 rounded-2xl overflow-hidden bg-zinc-800 border border-white/10 transition-all duration-500 group-hover:border-orange-500/60 group-hover:shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+                    <img 
+                      src={b.avatar} 
+                      alt={b.nombre} 
+                      className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110" 
+                    />
+                  </div>
+                  <div>
+                    {/* 🔥 Movimiento del nombre */}
+                    <h3 className="text-base font-black text-white transition-all duration-300 group-hover:text-orange-400 group-hover:translate-x-1">
+                      {b.nombre}
+                    </h3>
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mt-0.5 transition-colors duration-300 group-hover:text-zinc-400">
+                      {b.rol === 'admin' ? 'Master Barber' : 'Estilista'}
+                    </p>
                   </div>
                 </div>
 
-                {/* Info y Especialidades */}
-                <div className="space-y-2">
-                  <h3 className="text-xl font-black text-white group-hover:text-orange-400 transition-colors flex items-center justify-between">
-                    <span>{b.nombre}</span>
-                    <span className="text-xs font-mono font-normal text-zinc-500">#{b.id}</span>
-                  </h3>
-                  <p className="text-xs font-extrabold text-amber-400/90 uppercase tracking-wider">{b.rol}</p>
-                  <p className="text-zinc-400 text-xs line-clamp-2 pt-1 leading-relaxed">{b.bio}</p>
-                </div>
+                <p className="text-zinc-400 text-xs line-clamp-2 leading-relaxed transition-colors duration-300 group-hover:text-zinc-300">
+                  {b.bio}
+                </p>
 
-                {/* Pastillas de especialidades */}
-                <div className="flex flex-wrap gap-1.5 pt-2">
+                <div className="flex flex-wrap gap-1.5">
                   {b.especialidades?.map((esp, i) => (
-                    <span key={i} className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-zinc-800/80 text-zinc-300 border border-white/5">
+                    <span key={i} className="text-[9px] font-bold px-2 py-1 rounded bg-black/40 text-zinc-400 border border-white/5 transition-all duration-300 group-hover:border-orange-500/20 group-hover:text-orange-300 group-hover:bg-orange-500/5">
                       {esp}
                     </span>
                   ))}
                 </div>
               </div>
 
-              {/* 🔥 LINK DIRECTO A LA PÁGINA DEL PORTAFOLIO (/staff/:id) */}
-              <div className="pt-6 mt-6 border-t border-white/5 relative z-10">
+              <div className="pt-5 mt-5 border-t border-white/5 relative z-10 transition-colors duration-300 group-hover:border-white/10">
                 <Link 
                   to={`/staff/${b.id}`}
-                  className="w-full py-3.5 px-4 rounded-xl bg-zinc-800/80 group-hover:bg-orange-500 text-zinc-300 group-hover:text-black font-extrabold text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                  className="w-full py-2.5 px-4 rounded-xl bg-white/5 group-hover:bg-orange-500 text-zinc-300 group-hover:text-black font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Ver Portafolio</span>
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Ver perfil y trabajos</span>
+                  {/* 🔥 Flechita en movimiento al hacer hover en la tarjeta */}
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
                 </Link>
               </div>
             </div>

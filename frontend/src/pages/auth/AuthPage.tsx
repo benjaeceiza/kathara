@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import {
-  Sparkles, Mail, Lock, User, ArrowRight, Eye, EyeOff, ShieldCheck, Star, ArrowLeft
+  Sparkles, Mail, Lock, User, ArrowRight, Eye, EyeOff, ShieldCheck, Star, ArrowLeft, Phone
 } from 'lucide-react';
 import logo from "../../assets/logo.png";
 import { useAuthStore } from '../../store/authStore';
@@ -32,8 +32,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
 
   const [nombre, setNombre] = useState('');
   const [apellido, setApellido] = useState('');
+  const [telefono, setTelefono] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmarPassword, setConfirmarPassword] = useState('');
 
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -81,6 +83,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Si estamos en el primer paso del login, validamos el mail
     if (esLogin && pasoLogin === 1) {
       if (email.includes('@') && email.includes('.')) {
         setPasoLogin(2);
@@ -91,12 +94,21 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
       return; 
     }
 
+    // Validación extra para el registro
+    if (!esLogin) {
+      if (password !== confirmarPassword) {
+        setMensaje('❌ Las contraseñas no coinciden.');
+        return;
+      }
+    }
+
     setCargando(true);
     setMensaje(null);
 
     const endpoint = esLogin ? '/api/auth/login' : '/api/auth/register';
     const url = `${import.meta.env.VITE_BACKEND_URL}${endpoint}`;
-    const bodyData = esLogin ? { email, password } : { nombre, apellido, email, password };
+    // Enviamos el teléfono si es registro
+    const bodyData = esLogin ? { email, password } : { nombre, apellido, telefono, email, password };
 
     try {
       const respuesta = await fetch(url, {
@@ -131,12 +143,21 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
         setEsLogin(true);
         setPasoLogin(1);
         setPassword('');
+        setConfirmarPassword('');
       }
     } catch (error: any) {
       setMensaje(`❌ ${error.message}`);
     } finally {
       setCargando(false);
     }
+  };
+
+  const cambiarModo = () => {
+    setEsLogin(!esLogin); 
+    setPasoLogin(1); 
+    setMensaje(null);
+    setPassword('');
+    setConfirmarPassword('');
   };
 
   return (
@@ -183,7 +204,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
       <div className="w-full lg:w-5/12 min-h-screen flex flex-col justify-center px-6 sm:px-12 xl:px-16 relative bg-[#09090B] z-10">
         <div className="absolute top-1/4 right-0 w-72 h-72 bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <div className="w-full max-w-sm mx-auto space-y-8">
+        <div className="w-full max-w-sm mx-auto space-y-8 my-8">
           <div>
             <p className="text-xs font-extrabold text-orange-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4" />
@@ -195,7 +216,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
             <p className="text-zinc-400 text-xs sm:text-sm mt-2">
               {esLogin 
                 ? (pasoLogin === 1 ? 'Ingresá tu correo o usá tu cuenta de Google.' : `Ingresá la clave de ${email}`)
-                : 'Completá tus datos en menos de 1 minuto para empezar.'}
+                : 'Completá tus datos para empezar a gestionar tus turnos.'}
             </p>
           </div>
 
@@ -205,7 +226,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
               <div className="space-y-5 animate-fadeIn">
                 <button
                   type="button"
-                  onClick={() => handleGoogleLogin()} // 🔥 EJECUTAMOS EL HOOK ACÁ
+                  onClick={() => handleGoogleLogin()}
                   className="w-full py-3.5 px-4 bg-white hover:bg-zinc-200 text-black font-black text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-3 cursor-pointer"
                 >
                   <GoogleIcon />
@@ -221,17 +242,28 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
             )}
 
             {!esLogin && (
-              <div className="grid grid-cols-2 gap-3 animate-fadeIn">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Nombre</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required placeholder="Benja" className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+              <div className="space-y-4 animate-fadeIn">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Nombre</label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required placeholder="Benja" className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Apellido</label>
+                    <input type="text" value={apellido} onChange={(e) => setApellido(e.target.value)} required placeholder="E." className="w-full px-4 py-3 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
                   </div>
                 </div>
+
+                {/* NUEVO CAMPO: Teléfono */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Apellido</label>
-                  <input type="text" value={apellido} onChange={(e) => setApellido(e.target.value)} required placeholder="E." className="w-full px-4 py-3 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Teléfono</label>
+                  <div className="relative">
+                    <Phone className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input type="tel" value={telefono} onChange={(e) => setTelefono(e.target.value)} required placeholder="+54 9 2657 123456" className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                  </div>
                 </div>
               </div>
             )}
@@ -247,18 +279,36 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
             )}
 
             {(pasoLogin === 2 || !esLogin) && (
-              <div className="space-y-1.5 animate-fadeIn">
-                <div className="flex justify-between items-center">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Contraseña</label>
-                  {esLogin && <a href="#" className="text-[11px] text-orange-400 hover:underline font-semibold">¿Olvidaste tu clave?</a>}
+              <div className="space-y-4 animate-fadeIn">
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Contraseña</label>
+                    {/* BOTÓN OLVIDASTE TU CONTRASEÑA SOLO EN LOGIN */}
+                    {esLogin && (
+                      <a href="#" onClick={(e) => { e.preventDefault(); alert("Función en desarrollo."); }} className="text-[11px] text-orange-400 hover:underline font-semibold cursor-pointer transition-colors">
+                        ¿Olvidaste tu contraseña?
+                      </a>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input type={mostrarPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" className="w-full pl-10 pr-11 py-3.5 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                    <button type="button" onClick={() => setMostrarPassword(!mostrarPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors cursor-pointer p-1">
+                      {mostrarPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input type={mostrarPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" className="w-full pl-10 pr-11 py-3.5 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
-                  <button type="button" onClick={() => setMostrarPassword(!mostrarPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors cursor-pointer p-1">
-                    {mostrarPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+
+                {/* NUEVO CAMPO: Confirmar Contraseña (Solo en registro) */}
+                {!esLogin && (
+                  <div className="space-y-1.5 animate-fadeIn">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400">Confirmar Contraseña</label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input type={mostrarPassword ? "text" : "password"} value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} required placeholder="••••••••" className="w-full pl-10 pr-11 py-3.5 rounded-xl bg-zinc-900/80 border border-white/10 text-white placeholder-zinc-600 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all" />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -289,7 +339,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ alLoguearse }) => {
               {esLogin ? '¿Todavía no formás parte? ' : '¿Ya tenés una cuenta en el club? '}
               <button
                 type="button"
-                onClick={() => { setEsLogin(!esLogin); setPasoLogin(1); setMensaje(null); }}
+                onClick={cambiarModo}
                 className="text-orange-400 font-extrabold hover:underline ml-1 cursor-pointer"
               >
                 {esLogin ? 'Registrate gratis' : 'Iniciá sesión acá'}

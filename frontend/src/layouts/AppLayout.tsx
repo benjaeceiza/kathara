@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom'; // 1. IMPORTAMOS OUTLET ACÁ
+import { Outlet } from 'react-router-dom'; 
 import { Sidebar } from '../components/Sidebar';
 import  Footer  from '../components/Footer';
 import { Menu } from 'lucide-react';
 import logo from '../assets/logo.png';
+import { Loader } from '../components/Loader'; 
 
 interface AppLayoutProps {
   alCerrarSesion: () => void;
@@ -15,7 +16,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ alCerrarSesion }) => {
   return (
     <div className="min-h-screen bg-[#09090B] text-white flex flex-col font-sans w-full overflow-x-hidden">
       
-      {/* Header Móvil */}
       <header className="lg:hidden sticky top-0 z-30 bg-zinc-950/80 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center  shrink-0">
@@ -28,16 +28,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ alCerrarSesion }) => {
         </button>
       </header>
 
-      {/* Sidebar y Contenido Principal */}
       <div className="flex flex-1 w-full">
         <Sidebar alCerrarSesion={alCerrarSesion} menuAbierto={menuAbierto} cerrarMenu={() => setMenuAbierto(false)} />
 
-        <main className="flex-1 w-full lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-[1600px] mx-auto flex flex-col justify-between min-h-screen">
-          <div className="space-y-12">
-            
-            {/* 🔥 ACÁ ESTABA EL ERROR: Reemplazamos <HomePage /> por <Outlet /> */}
-            <Outlet />
+        <main className="flex-1 w-full lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-[1600px] mx-auto flex flex-col justify-between min-h-screen relative">
+          
+          {/* 🔥 LE PASAMOS LA ORDEN DE QUE ESQUIVE EL MENÚ DEL CLIENTE */}
+          <Loader tipoLayout="cliente" />
 
+          <div className="space-y-12">
+            <Outlet />
           </div>
           <Footer />
         </main>

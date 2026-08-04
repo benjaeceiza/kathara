@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 interface RegistroData {
   nombre: string;
   apellido: string;
+  telefono: String;
   email: string;
   password?: string;
 }
@@ -88,11 +89,11 @@ export const loginConGoogle = async (accessToken: string) => {
       nombre: given_name,
       apellido: family_name || '',
       email: email,
-      password: passwordGenerado, 
+      password: passwordGenerado,
       rol: 'cliente',
-      avatar: picture 
+      avatar: picture
     });
-    
+
     await usuario.save();
   }
 
