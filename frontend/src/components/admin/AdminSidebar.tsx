@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'; 
-import { LayoutDashboard, CalendarDays, Scissors, Users, Globe, UserSquare, Briefcase, Settings, X } from 'lucide-react'; // 🔥 Importamos la X
+import { LayoutDashboard, CalendarDays, Scissors, Users, Globe, UserSquare, Briefcase, Settings, X } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import logo from "../../assets/logo.png";
 
@@ -23,7 +23,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ menuAbierto, cerrarM
 
     return (
         <>
-            {/* Backdrop Oscuro en Celular */}
             {menuAbierto && (
                 <div 
                     onClick={cerrarMenu} 
@@ -31,31 +30,33 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ menuAbierto, cerrarM
                 />
             )}
 
-            <aside className={`fixed top-0 left-0 h-screen z-50 w-72 lg:w-64 border-r border-white/10 bg-zinc-950 flex flex-col justify-between p-6 transition-transform duration-300 ease-in-out ${
+            {/* 🔥 Cambiamos h-screen por h-[100dvh] y sacamos justify-between */}
+            <aside className={`fixed top-0 left-0 h-[100dvh] z-50 w-72 lg:w-64 border-r border-white/10 bg-zinc-950 flex flex-col p-6 transition-transform duration-300 ease-in-out ${
                 menuAbierto ? 'translate-x-0 shadow-2xl shadow-black' : '-translate-x-full lg:translate-x-0'
             }`}>
-                <div>
-                    {/* Logo y Marca con Botón X */}
-                    <div className="flex items-center justify-between mb-10 px-1">
-                        <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-lg shadow-white/5 shrink-0">
-                                <img src={logo} alt="Kathara" className="w-full h-full object-contain" />
-                            </div>
-                            <div>
-                                <span className="font-black text-lg tracking-wider text-white uppercase block leading-none">Kathara</span>
-                                <span className="text-[9px] text-orange-400 font-extrabold tracking-widest uppercase block mt-0.5">Admin Panel</span>
-                            </div>
+                
+                {/* 🔥 PARTE SUPERIOR FIJA: Logo y Marca con Botón X */}
+                <div className="flex items-center justify-between mb-6 px-1 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-lg shadow-white/5 shrink-0">
+                            <img src={logo} alt="Kathara" className="w-full h-full object-contain" />
                         </div>
-                        
-                        <button 
-                            onClick={cerrarMenu}
-                            className="p-2 rounded-xl text-zinc-400 hover:text-white lg:hidden cursor-pointer"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
+                        <div>
+                            <span className="font-black text-lg tracking-wider text-white uppercase block leading-none">Kathara</span>
+                            <span className="text-[9px] text-orange-400 font-extrabold tracking-widest uppercase block mt-0.5">Admin Panel</span>
+                        </div>
                     </div>
+                    
+                    <button 
+                        onClick={cerrarMenu}
+                        className="p-2 rounded-xl text-zinc-400 hover:text-white lg:hidden cursor-pointer"
+                    >
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
 
-                    {/* Menú de Navegación */}
+                {/* 🔥 PARTE CENTRAL SCROLLEABLE: Menú de Navegación */}
+                <div className="flex-1 overflow-y-auto scrollbar-hide -mx-2 px-2 space-y-6 pb-4">
                     <nav className="space-y-2">
                         {menuItems.map((item) => {
                             const isActive = location.pathname === item.path;
@@ -63,7 +64,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ menuAbierto, cerrarM
                                 <Link
                                     key={item.name}
                                     to={item.path}
-                                    onClick={cerrarMenu} // 🔥 Cerramos menú al tocar en celular
+                                    onClick={cerrarMenu} 
                                     className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all group ${
                                         isActive
                                             ? 'bg-gradient-to-r from-orange-500/20 to-transparent text-orange-400 font-bold border-l-2 border-orange-500 shadow-sm'
@@ -79,8 +80,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ menuAbierto, cerrarM
                         })}
                     </nav>
 
-                    {/* Botón para volver a la web pública */}
-                    <div className="mt-6">
+                    <div className="mt-6 border-t border-white/5 pt-6">
                         <Link
                             to="/"
                             className="flex items-center gap-4 px-4 py-3.5 rounded-2xl border border-white/10 text-zinc-400 hover:text-white hover:bg-white/5 transition-all text-sm font-bold tracking-wide"
@@ -91,8 +91,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ menuAbierto, cerrarM
                     </div>
                 </div>
 
-                {/* Parte Inferior: Perfil de Admin */}
-                <div className="pt-4 border-t border-white/10 px-1">
+                {/* 🔥 PARTE INFERIOR FIJA: Perfil de Admin */}
+                <div className="pt-4 mt-2 border-t border-white/10 px-1 shrink-0">
                     <Link 
                         to="/admin/perfil"
                         onClick={cerrarMenu}
