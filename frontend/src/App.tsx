@@ -23,8 +23,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ScrollToTop } from './components/ScrollToTop';
 
 function App() {
-  const logout = useAuthStore((state) => state.logout);
-
+  
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
@@ -39,7 +38,7 @@ function App() {
           </Route>
 
           {/* 2. EL LAYOUT GENERAL (Clientes) */}
-          <Route element={<AppLayout alCerrarSesion={logout} />}>
+          <Route element={<AppLayout/>}>
             <Route path="/" element={<HomePage />} />
             <Route path="/servicios" element={<ServiciosStaffPage />} />
             <Route path="/staff/:id" element={<PortafolioBarberoPage />} />

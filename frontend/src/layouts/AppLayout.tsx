@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom'; 
 import { Sidebar } from '../components/Sidebar';
-import  Footer  from '../components/Footer';
+import Footer from '../components/Footer';
 import { Menu } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { Loader } from '../components/Loader'; 
 
-interface AppLayoutProps {
-  alCerrarSesion: () => void;
-}
+// 🔥 Volamos la interfaz AppLayoutProps porque ya no recibimos alCerrarSesion
 
-export const AppLayout: React.FC<AppLayoutProps> = ({ alCerrarSesion }) => {
+export const AppLayout: React.FC = () => {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   return (
@@ -29,7 +27,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ alCerrarSesion }) => {
       </header>
 
       <div className="flex flex-1 w-full">
-        <Sidebar alCerrarSesion={alCerrarSesion} menuAbierto={menuAbierto} cerrarMenu={() => setMenuAbierto(false)} />
+        {/* 🔥 Le sacamos el alCerrarSesion y dejamos solo lo del menú */}
+        <Sidebar menuAbierto={menuAbierto} cerrarMenu={() => setMenuAbierto(false)} />
 
         <main className="flex-1 w-full lg:ml-64 p-4 sm:p-6 lg:p-8 overflow-y-auto max-w-[1600px] mx-auto flex flex-col justify-between min-h-screen relative">
           
