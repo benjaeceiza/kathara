@@ -7,6 +7,7 @@ import serviciosRoutes from './routes/serviciosRoutes';
 import peluquerosRoutes from './routes/peluquerosRoutes';
 import usuariosRoutes from './routes/usuarioRoutes';
 import turnosRoutes from './routes/turnosRoutes';
+import portafolioRoutes from './routes/portafolioRoutes';
 
 // Configuramos las variables de entorno
 dotenv.config();
@@ -16,7 +17,7 @@ conectarDB();
 
 // Inicializamos la app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Middlewares básicos
 app.use(cors()); // Permite peticiones desde el frontend
@@ -28,7 +29,7 @@ app.use('/api/servicios', serviciosRoutes);
 app.use('/api/peluqueros', peluquerosRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/turnos', turnosRoutes);
-
+app.use('/api/portafolio', portafolioRoutes);
 
 
 // Arrancar el motor

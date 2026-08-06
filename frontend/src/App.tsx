@@ -15,6 +15,7 @@ import { TurnosAdminPage } from './pages/admin/TurnosAdminPage';
 import { ServiciosAdminPage } from './pages/admin/ServiciosAdminPage';
 import { StaffAdminPage } from './pages/admin/StaffAdminPage';
 import { ClientesAdminPage } from './pages/admin/ClientesAdminPage';
+import PortafolioAdminPage from './pages/admin/PortafolioAdminPage';
 
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './layouts/AdminLayout';
@@ -23,7 +24,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ScrollToTop } from './components/ScrollToTop';
 
 function App() {
-  
+
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <BrowserRouter>
@@ -38,7 +39,7 @@ function App() {
           </Route>
 
           {/* 2. EL LAYOUT GENERAL (Clientes) */}
-          <Route element={<AppLayout/>}>
+          <Route element={<AppLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/servicios" element={<ServiciosStaffPage />} />
             <Route path="/staff/:id" element={<PortafolioBarberoPage />} />
@@ -59,6 +60,7 @@ function App() {
               <Route path="turnos" element={<TurnosAdminPage />} />
               <Route path="clientes" element={<ClientesAdminPage />} />
               <Route path="/admin/perfil" element={<PerfilPage />} />
+              <Route path="/admin/portafolio" element={<PortafolioAdminPage />} />
             </Route>
           </Route>
 

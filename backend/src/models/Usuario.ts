@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// 1. El sub-esquema para los días de trabajo
+// 1. El sub-esquema para los días de trabajo[cite: 7]
 export interface IHorario {
   dia: 'Lunes' | 'Martes' | 'Miércoles' | 'Jueves' | 'Viernes' | 'Sábado' | 'Domingo';
   activo: boolean;
@@ -8,7 +8,7 @@ export interface IHorario {
   horaFin: string;
 }
 
-// 2. La interfaz unificada
+// 2. La interfaz unificada[cite: 7]
 export interface IUsuario extends Document {
   nombre: string;
   apellido: string;
@@ -22,16 +22,18 @@ export interface IUsuario extends Document {
   especialidades?: string[]; 
   horarios?: IHorario[];
   
-  // 🔥 NUEVOS CAMPOS (Reputación y Fidelidad)
   turnosCompletados: number;
   faltas: number;
   exentoSena: boolean;
 
   activo: boolean;
   fechaCreacion: Date;
+  
+  // 🔥 NUEVO: Referencia al portafolio
+  portafolio?: mongoose.Types.ObjectId; 
 }
 
-// 3. El Schema de Mongoose para el Horario
+// 3. El Schema de Mongoose para el Horario[cite: 7]
 const HorarioSchema = new Schema({
   dia: { 
     type: String, 
@@ -43,7 +45,7 @@ const HorarioSchema = new Schema({
   horaFin: { type: String, default: '20:00' }
 }, { _id: false });
 
-// 4. El Super-Schema Principal
+// 4. El Super-Schema Principal[cite: 7]
 const UsuarioSchema: Schema = new Schema({
   nombre: { type: String, required: true, trim: true },
   apellido: { type: String, required: true, trim: true },
@@ -56,13 +58,14 @@ const UsuarioSchema: Schema = new Schema({
   especialidades: [{ type: String }],
   horarios: { type: [HorarioSchema], default: [] },
   
-  // 🔥 VALORES POR DEFECTO PARA LA REPUTACIÓN
   turnosCompletados: { type: Number, default: 0 },
   faltas: { type: Number, default: 0 },
   exentoSena: { type: Boolean, default: false },
   
   activo: { type: Boolean, default: true },
-  fechaCreacion: { type: Date, default: Date.now }
+  fechaCreacion: { type: Date, default: Date.now },
+
+  portafolio: { type: Schema.Types.ObjectId, ref: 'Portafolio' }
 });
 
 export default mongoose.model<IUsuario>('Usuario', UsuarioSchema);
