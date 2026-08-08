@@ -15,7 +15,7 @@ import { TurnosAdminPage } from './pages/admin/TurnosAdminPage';
 import { ServiciosAdminPage } from './pages/admin/ServiciosAdminPage';
 import { StaffAdminPage } from './pages/admin/StaffAdminPage';
 import { ClientesAdminPage } from './pages/admin/ClientesAdminPage';
-import PortafolioAdminPage from './pages/admin/PortafolioAdminPage';
+import PortafolioAdminPage from './pages/admin/admin-portafolio-page/PortafolioAdminPage';
 
 import AdminRoute from './components/AdminRoute';
 import AdminLayout from './layouts/AdminLayout';

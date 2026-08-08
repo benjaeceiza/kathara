@@ -51,7 +51,7 @@ const subirACloudinary = (buffer: Buffer): Promise<any> => {
         folder: 'kathara/perfil', 
         transformation: [{ width: 400, height: 400, crop: 'fill' }] 
       },
-      (error, result) => {
+      (error: any, result: any) => {
         if (error) reject(error);
         else resolve(result);
       }
