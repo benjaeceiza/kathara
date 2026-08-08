@@ -1,0 +1,1 @@
+{"version":3,"file":"Servicio.d.ts","sourceRoot":"","sources":["../../src/models/Servicio.ts"],"names":[],"mappings":"AAAA,OAAO,QAAQ,EAAE,EAAU,QAAQ,EAAE,MAAM,UAAU,CAAC;AAEtD,MAAM,WAAW,SAAU,SAAQ,QAAQ;IACzC,MAAM,EAAE,MAAM,CAAC;IACf,WAAW,CAAC,EAAE,MAAM,CAAC;IACrB,MAAM,EAAE,MAAM,CAAC;IACf,eAAe,EAAE,MAAM,CAAC;IACxB,MAAM,EAAE,OAAO,CAAC;CACjB;;;;;;;;AAUD,wBAAqE"}

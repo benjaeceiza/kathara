@@ -17,8 +17,8 @@ export const reservarTurno = async (datos: ReservaData) => {
     throw new Error('No se encontraron los servicios seleccionados');
   }
 
-  const duracionTotalMinutos = serviciosDB.reduce((total, serv) => total + serv.duracionMinutos, 0);
-  const precioTotal = serviciosDB.reduce((total, serv) => total + serv.precio, 0);
+  const duracionTotalMinutos = serviciosDB.reduce((total: number, serv: any) => total + serv.duracionMinutos, 0);
+  const precioTotal = serviciosDB.reduce((total: number, serv: any) => total + serv.precio, 0);
 
   // 2. Calcular la fecha y hora de fin del turno
   const inicio = new Date(fechaHoraInicio);
