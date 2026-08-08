@@ -21,7 +21,8 @@ export interface IUsuario extends Document {
   
   especialidades?: string[]; 
   horarios?: IHorario[];
-  
+  tituloProfesional?: string;
+
   turnosCompletados: number;
   faltas: number;
   exentoSena: boolean;
@@ -57,7 +58,7 @@ const UsuarioSchema: Schema = new Schema({
   recibeTurnos: { type: Boolean, default: false },
   especialidades: [{ type: String }],
   horarios: { type: [HorarioSchema], default: [] },
-  
+  tituloProfesional: { type: String, default: 'Estilista' },
   turnosCompletados: { type: Number, default: 0 },
   faltas: { type: Number, default: 0 },
   exentoSena: { type: Boolean, default: false },

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Scissors, Award, ArrowUpRight } from 'lucide-react'; // 🔥 Volamos Share2
+import { Scissors, Award, ArrowUpRight } from 'lucide-react'; 
 import { getStaff } from '../../services/staff.service'; 
 
 interface IBarbero {
@@ -9,6 +9,7 @@ interface IBarbero {
   apellido: string;
   rol: string;
   avatar?: string;
+  tituloProfesional?: string;
   especialidades?: string[];
 }
 
@@ -87,7 +88,7 @@ const StaffSection: React.FC = () => {
               <div className="absolute bottom-0 left-0 w-full p-6 flex flex-col justify-end translate-y-3 group-hover:translate-y-0 transition-transform duration-500 z-30">
                 <div className="mb-2">
                   <span className="inline-block px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-[10px] font-black text-white uppercase tracking-widest">
-                    {b.rol === 'admin' ? 'Master Barber' : 'Estilista'}
+                    {b.rol === 'admin'|| b.rol === 'peluquero' ? b.tituloProfesional : 'Estilista'}
                   </span>
                 </div>
                 
