@@ -15,7 +15,7 @@ interface LoginData {
   password?: string;
 }
 
-// 1. Registro con contraseña encriptada (Hash)
+// 1. Registro con contraseña encriptada (Hash) y Avatar automático
 export const registrarNuevoUsuario = async (datos: RegistroData) => {
   const usuarioExistente = await Usuario.findOne({ email: datos.email });
   if (usuarioExistente) {
@@ -27,7 +27,18 @@ export const registrarNuevoUsuario = async (datos: RegistroData) => {
     datos.password = await bcrypt.hash(datos.password, salt);
   }
 
-  const nuevoUsuario = new Usuario(datos);
+  // 🔥 CREAMOS EL AVATAR DINÁMICO
+  // Limpiamos los espacios en blanco por si meten un espacio extra y armamos la URL
+  const nombreLimpio = datos.nombre.trim();
+  const apellidoLimpio = datos.apellido.trim();
+  const avatarUrl = `https://ui-avatars.com/api/?name=${nombreLimpio}+${apellidoLimpio}&background=27272a&color=f97316`;
+
+  // Se lo mandamos al modelo junto con todos los datos que venían del body
+  const nuevoUsuario = new Usuario({
+    ...datos,
+    avatar: avatarUrl
+  });
+  
   await nuevoUsuario.save();
 
   const usuarioLimpio = nuevoUsuario.toObject();
@@ -85,19 +96,22 @@ export const loginConGoogle = async (accessToken: string) => {
     const salt = await bcrypt.genSalt(10);
     const passwordGenerado = await bcrypt.hash('@@@google_auth_placeholder_pwd@@@', salt);
 
+    // NOTA: Acá Google ya nos da el `picture` (la foto de su cuenta de Google), 
+    // pero si querés podés pisarlo con el ui-avatars también si lo preferís. 
+    // Yo te lo dejé con el de Google porque suele ser su foto real.
     usuario = new Usuario({
       nombre: given_name,
       apellido: family_name || '',
       email: email,
       password: passwordGenerado,
       rol: 'cliente',
-      avatar: picture
+      avatar: picture 
     });
 
     await usuario.save();
   }
 
-  // 4. Generamos TU propio Token JWT (reutilizando tu lógica)
+  // 4. Generamos TU propio Token JWT
   const token = jwt.sign(
     { id: usuario._id, rol: usuario.rol },
     process.env.JWT_SECRET as string,

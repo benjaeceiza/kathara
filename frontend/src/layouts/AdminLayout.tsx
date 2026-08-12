@@ -2,16 +2,14 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from '../components/admin/AdminSidebar'; 
 import { Loader } from '../components/Loader';
-import { Menu } from 'lucide-react'; // 🔥 Importamos el ícono de hamburguesa
+import { Menu } from 'lucide-react'; 
 
 const AdminLayout: React.FC = () => {
-    // 🔥 1. Creamos el estado para saber si el menú del celular está abierto
     const [menuAbierto, setMenuAbierto] = useState(false);
 
     return (
         <div className="h-screen bg-[#09090B] flex flex-col lg:flex-row text-white font-sans overflow-hidden">
             
-            {/* 🔥 2. HEADER MÓVIL (Solo se ve en celulares) */}
             <header className="lg:hidden flex items-center justify-between p-4 border-b border-white/5 bg-zinc-950 z-40 shrink-0 shadow-md">
                 <div className="flex items-center gap-2">
                     <span className="font-black text-lg tracking-wider text-white uppercase">Kathara Admin</span>
@@ -24,18 +22,18 @@ const AdminLayout: React.FC = () => {
                 </button>
             </header>
 
-            {/* 🔥 3. Le pasamos al Sidebar las propiedades que nos pedía y marcaba en rojo */}
             <AdminSidebar 
                 menuAbierto={menuAbierto} 
                 cerrarMenu={() => setMenuAbierto(false)} 
             />
 
-            {/* 🔥 4. Agregamos lg:ml-64 para que el contenido esquive al sidebar fijo en PC */}
-            <main className="flex-1 overflow-y-auto relative scrollbar-hide lg:ml-64">
-                {/* 🔥 LE PASAMOS LA ORDEN DE QUE ESQUIVE EL MENÚ DE ADMIN */}
+            {/* 🔥 ACÁ ESTABA EL PROBLEMA: Agregamos overflow-x-hidden */}
+            <main className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide lg:ml-64">
                 <Loader tipoLayout="admin" />
                 
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-orange-500/5 blur-[150px] pointer-events-none rounded-full"></div>
+                {/* 🔥 Y acá cambiamos w-[800px] por w-full max-w-[800px] */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[300px] bg-orange-500/5 blur-[150px] pointer-events-none rounded-full"></div>
+                
                 <div className="p-4 sm:p-8 relative z-10">
                     <Outlet />
                 </div>

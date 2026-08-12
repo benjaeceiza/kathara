@@ -1,13 +1,26 @@
 import { Router } from 'express';
-import { crearTurno, listarAgenda } from '../controllers/turnoController';
-import { protegerRuta } from '../middlewares/authMiddleware'; 
+import {
+    crearTurno,
+    listarAgenda,
+    obtenerMisTurnos,
+    cancelarTurno,
+    obtenerTurnosOcupados,
+    obtenerTurnosHoyAdmin,
+    obtenerTurnosSemanaAdmin
+} from '../controllers/turnoController';
+import { protegerRuta } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-// 2. Lo ponés en el medio de la ruta que querés bloquear
-// Ahora NADIE puede llamar a POST /api/turnos/reservar si no manda el token
+// Rutas protegidas (Solo usuarios logueados)
 router.post('/reservar', protegerRuta, crearTurno);
+router.get('/mis-turnos', protegerRuta, obtenerMisTurnos); 
+router.put('/:id/cancelar', protegerRuta, cancelarTurno);
+router.get('/hoy', protegerRuta, obtenerTurnosHoyAdmin);
+router.get('/semana', protegerRuta, obtenerTurnosSemanaAdmin);
 
-router.get('/agenda/:peluqueroId', listarAgenda); // A la agenda la dejamos pública para que cualquiera vea los horarios libres
+// Rutas públicas
+router.get('/agenda/:peluqueroId', listarAgenda);
+router.get('/ocupados', obtenerTurnosOcupados);
 
 export default router;

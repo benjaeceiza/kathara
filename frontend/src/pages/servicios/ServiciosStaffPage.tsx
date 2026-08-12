@@ -29,6 +29,7 @@ interface Barbero {
   rol: string;
   avatar: string;
   bio: string;
+  tituloProfesional?: string;
   especialidades: string[];
 }
 
@@ -53,7 +54,7 @@ const ServiciosStaffPage: React.FC = () => {
         const staffAdaptado = dataStaff.map((b: any) => ({
           ...b,
           id: b._id || b.id,
-          avatar: b.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop"
+          avatar: b.avatar ||  `https://ui-avatars.com/api/?name=${b.nombre}+${b.apellido}&background=27272a&color=f97316`
         }));
 
         setServicios(serviciosAdaptados);
@@ -86,7 +87,6 @@ const ServiciosStaffPage: React.FC = () => {
       {/* ========================================================= */}
       <div className="text-center max-w-2xl mx-auto space-y-4 pt-8">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-[11px] font-black text-orange-400 uppercase tracking-widest transition-all duration-500 hover:scale-105 hover:bg-orange-500/20 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)] cursor-default">
-          <Sparkles className="w-3.5 h-3.5" />
           <span>Experiencia Kathara</span>
         </div>
         <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-200 to-zinc-400 tracking-tight leading-tight transition-all duration-700 hover:from-white hover:to-orange-100">
@@ -158,7 +158,7 @@ const ServiciosStaffPage: React.FC = () => {
 
               <div className="pt-5 mt-4 border-t border-white/5 transition-colors duration-300 group-hover:border-white/10">
                 <Link 
-                  to={`/reservar?servicio=${encodeURIComponent(s.nombre)}`}
+                  to={`/reservar?servicio=${encodeURIComponent(s.nombre)}&id=${s.id}`}
                   className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer ${
                     s.destacado
                       ? 'bg-orange-500/10 text-orange-400 hover:bg-orange-500 hover:text-black hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]'
@@ -184,7 +184,7 @@ const ServiciosStaffPage: React.FC = () => {
           <div>
             <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
               <User className="w-5 h-5 text-orange-500 transition-transform duration-500 group-hover/header:-translate-y-1" />
-              <span>Maestros Barberos</span>
+              <span>Profesionales</span>
             </h2>
           </div>
           <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Staff Oficial</span>
@@ -204,16 +204,16 @@ const ServiciosStaffPage: React.FC = () => {
                     <img 
                       src={b.avatar} 
                       alt={b.nombre} 
-                      className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110" 
+                      className="w-full h-full object-cover  transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110" 
                     />
                   </div>
                   <div>
                     {/* 🔥 Movimiento del nombre */}
-                    <h3 className="text-base font-black text-white transition-all duration-300 group-hover:text-orange-400 group-hover:translate-x-1">
+                    <h3 className="text-base font-black capitalize text-white transition-all duration-300 group-hover:text-orange-400 group-hover:translate-x-1">
                       {b.nombre}
                     </h3>
                     <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mt-0.5 transition-colors duration-300 group-hover:text-zinc-400">
-                      {b.rol === 'admin' ? 'Master Barber' : 'Estilista'}
+                      {b.tituloProfesional ||  'Estilista'}
                     </p>
                   </div>
                 </div>

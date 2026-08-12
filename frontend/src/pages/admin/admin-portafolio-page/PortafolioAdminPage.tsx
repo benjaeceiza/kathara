@@ -12,7 +12,7 @@ import {
 import { useAuthStore } from '../../../store/authStore';
 import { Toast } from '../../../components/ui/Toast';
 
-// IMPORTAMOS TUS NUEVOS COMPONENTES:
+// IMPORTAMOS TUS COMPONENTES HIJOS
 import PortafolioHeader from './PortafolioHeader';
 import PortafolioInfoRedes from './PortafolioInfoRedes';
 import PortafolioGaleria from './PortafolioGaleria';
@@ -35,13 +35,24 @@ export default function PortafolioAdminPage() {
     const [editandoInfo, setEditandoInfo] = useState(false);
     const [toast, setToast] = useState({ visible: false, mensaje: '', tipo: 'success' as 'success' | 'error' });
 
+    // Array maestro de horarios
+    const horariosPorDefecto = [
+        { dia: 'Lunes', activo: false, horaInicio: '09:00', horaFin: '20:00' },
+        { dia: 'Martes', activo: true, horaInicio: '10:00', horaFin: '19:00' },
+        { dia: 'Miércoles', activo: true, horaInicio: '10:00', horaFin: '19:00' },
+        { dia: 'Jueves', activo: true, horaInicio: '10:00', horaFin: '19:00' },
+        { dia: 'Viernes', activo: true, horaInicio: '09:00', horaFin: '21:00' },
+        { dia: 'Sábado', activo: true, horaInicio: '09:00', horaFin: '21:00' },
+        { dia: 'Domingo', activo: false, horaInicio: '10:00', horaFin: '14:00' }
+    ];
+
     const [formData, setFormData] = useState({
         tituloProfesional: '',
         biografiaProfesional: '',
         instagram: '',
         whatsapp: '',
         especialidades: '',
-        horarios: '',
+        horarios: horariosPorDefecto,
         serviciosSeleccionados: [] as string[]
     });
 
@@ -77,7 +88,7 @@ export default function PortafolioAdminPage() {
                     instagram: data.redesProfesionales?.instagram || '',
                     whatsapp: data.peluquero?.telefono || data.redesProfesionales?.whatsapp || usuario?.telefono || '',
                     especialidades: skillsArray.join(', '),
-                    horarios: data.horarios || '',
+                    horarios: (data.peluquero?.horarios?.length > 0) ? data.peluquero.horarios : horariosPorDefecto,
                     serviciosSeleccionados: data.serviciosQueRealiza || []
                 });
 
@@ -99,9 +110,18 @@ export default function PortafolioAdminPage() {
         }
     };
 
-    // ... (Mantienes tus handlers de guardar datos, crear portafolio, y subida de imagenes. Extraje el logica fuerte a los componentes)
-    // Dejo los handlers originales acá:
-    const handleCrearPortafolio = async () => { /* tu logica */ };
+    const handleCrearPortafolio = async () => {
+        try {
+            setCreando(true);
+            const nuevoPortafolio = await crearMiPortafolio();
+            setPortafolio(nuevoPortafolio);
+            setToast({ visible: true, mensaje: '¡Portafolio creado con éxito!', tipo: 'success' });
+        } catch (error: any) {
+            setToast({ visible: true, mensaje: error.message, tipo: 'error' });
+        } finally {
+            setCreando(false);
+        }
+    };
 
     const handleGuardarDatos = async () => {
         try {
@@ -192,11 +212,35 @@ export default function PortafolioAdminPage() {
 
     if (!portafolio) {
         return (
-            <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
-                {/* TU ESTADO EMPTY DE ANTES ACA */}
-                <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">Tu Vitrina <span className="text-orange-500">Profesional</span></h1>
-                <button onClick={handleCrearPortafolio} disabled={creando} className="group flex items-center gap-3 px-8 py-4 bg-orange-500 hover:bg-orange-400 text-black font-black text-lg rounded-2xl transition-all disabled:opacity-50">
-                    {creando ? 'Creando...' : <><PlusCircle className="w-6 h-6" /> Crear Mi Portafolio Ahora</>}
+            <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[70vh] text-center px-4 animate-fadeIn">
+                <div className="w-24 h-24 bg-orange-500/10 rounded-full flex items-center justify-center mb-6 relative border border-orange-500/20 shadow-[0_0_30px_rgba(249,115,22,0.15)]">
+                    <Briefcase className="w-12 h-12 text-orange-500 relative z-10" />
+                </div>
+
+                <h1 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight">
+                    Tu Vitrina <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Profesional</span>
+                </h1>
+
+                <p className="text-zinc-400 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Creá tu portafolio personalizado para mostrar tus mejores cortes, configurar tus servicios y dejar que los clientes vean tu estilo único.
+                </p>
+
+                <button
+                    onClick={handleCrearPortafolio}
+                    disabled={creando}
+                    className="group flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-black font-black text-lg rounded-2xl transition-all hover:-translate-y-1 shadow-[0_10px_30px_rgba(249,115,22,0.3)] disabled:opacity-50 disabled:hover:translate-y-0"
+                >
+                    {creando ? (
+                        <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                            Creando...
+                        </div>
+                    ) : (
+                        <>
+                            <PlusCircle className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
+                            Crear Mi Portafolio Ahora
+                        </>
+                    )}
                 </button>
             </div>
         );
@@ -205,6 +249,7 @@ export default function PortafolioAdminPage() {
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fadeIn pb-32">
 
+            {/* ENCABEZADO */}
             <PortafolioHeader
                 portafolio={portafolio} usuario={usuario} formData={formData}
                 editandoInfo={editandoInfo} setEditandoInfo={setEditandoInfo}
@@ -213,28 +258,33 @@ export default function PortafolioAdminPage() {
                 subiendoAvatar={subiendoAvatar} handleSubirAvatar={handleSubirAvatar}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* GRID PRINCIPAL CON items-start PARA EVITAR ESTIRAMIENTOS */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                
+                {/* COLUMNA IZQUIERDA: Info & Redes */}
                 <div className="lg:col-span-1 space-y-6">
                     <PortafolioInfoRedes
                         formData={formData} setFormData={setFormData} editandoInfo={editandoInfo}
                     />
                 </div>
 
-                <div className="lg:col-span-2">
+                {/* COLUMNA DERECHA: Galería + Servicios (Agrupados sin huecos) */}
+                <div className="lg:col-span-2 space-y-6">
                     <PortafolioGaleria
                         portafolio={portafolio} setPortafolio={setPortafolio} editandoInfo={editandoInfo}
                         subiendoGaleria={subiendoGaleria} handleSubirGaleria={handleSubirGaleria}
                         handleEliminarImagen={handleEliminarImagen} setToast={setToast}
                         cargarPortafolio={cargarPortafolio}
                     />
+                    
+                    <PortafolioServicios
+                        serviciosDisponibles={serviciosDisponibles} formData={formData}
+                        handleToggleServicio={handleToggleServicio} editandoInfo={editandoInfo}
+                    />
                 </div>
             </div>
 
-            <PortafolioServicios
-                serviciosDisponibles={serviciosDisponibles} formData={formData}
-                handleToggleServicio={handleToggleServicio} editandoInfo={editandoInfo}
-            />
-
+            {/* BOTÓN FLOTANTE DE GUARDADO */}
             {editandoInfo && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
                     <button
