@@ -1,59 +1,85 @@
 import Usuario from '../models/Usuario';
 import bcrypt from 'bcryptjs';
 
-interface PeluqueroData {
+export interface PeluqueroData {
   nombre: string;
   apellido: string;
   email: string;
   telefono?: string;
-  especialidades?: string[];
-  password?: string; // Opcional: por si el admin le quiere asignar una clave específica
+  password?: string;
+  rol: string;           // 🔥 Ahora lo pedimos dinámico (admin o peluquero)
+  recibeTurnos: boolean; // 🔥 Dinámico
+  activo: boolean;       // 🔥 Dinámico
 }
 
+// ==========================================
+// 🧑‍💼 FUNCIONES PARA EL PANEL ADMIN (Nuevas)
+// ==========================================
+
+// Trae TODO el equipo (admins y peluqueros) para la grilla del dashboard
+export const obtenerTodoElStaff = async () => {
+  return await Usuario.find({ rol: { $in: ['admin', 'peluquero'] } }).select('-password');
+};
+
+// Modificamos un poco la tuya para que reciba el rol, activo y recibeTurnos del frontend
 export const crearNuevoPeluquero = async (datos: PeluqueroData) => {
-  // 1. Verificamos que el email no esté en uso por NINGÚN usuario (cliente o staff)
   const existe = await Usuario.findOne({ email: datos.email });
   if (existe) throw new Error('Ya existe un usuario o peluquero registrado con ese email');
 
-  // 2. Le asignamos la clave que mandó el admin, o una genérica por defecto
   const passwordPlano = datos.password || 'Kathara2026';
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(passwordPlano, salt);
 
-  // 3. Creamos el documento forzando el rol
   const nuevoPeluquero = new Usuario({
-    ...datos,
-    password: passwordHash,
-    rol: 'peluquero',
-    recibeTurnos: true
+    ...datos, // Acá ya vienen nombre, apellido, email, rol, recibeTurnos y activo
+    password: passwordHash
   });
 
   const peluqueroGuardado = await nuevoPeluquero.save();
 
-  // 4. Limpiamos la contraseña antes de devolver el objeto al frontend
   const peluqueroLimpio = peluqueroGuardado.toObject();
-  delete peluqueroLimpio.password;
+  const { password, ...resto } = peluqueroLimpio;
 
-  return peluqueroLimpio;
+  return resto;
 };
 
+export const actualizarPeluquero = async (id: string, datos: Partial<PeluqueroData>) => {
+  const datosActualizar = { ...datos };
+
+  if (datosActualizar.password) {
+    const salt = await bcrypt.genSalt(10);
+    datosActualizar.password = await bcrypt.hash(datosActualizar.password, salt);
+  }
+
+  const actualizado = await Usuario.findByIdAndUpdate(id, datosActualizar, { returnDocument: 'after' }).select('-password');
+  if (!actualizado) throw new Error('Miembro del staff no encontrado');
+  
+  return actualizado;
+};
+
+export const eliminarPeluquero = async (id: string) => {
+  const eliminado = await Usuario.findByIdAndDelete(id);
+  if (!eliminado) throw new Error('Miembro del staff no encontrado');
+  return eliminado;
+};
+
+// ==========================================
+// ✂️ TUS FUNCIONES ORIGINALES (Para el Wizard y Catálogo)
+// ==========================================
 
 export const obtenerPeluquerosActivos = async () => {
-  // 🔥 BUSCAMOS POR EL NUEVO BOOLEANO EN LUGAR DEL ROL
   return await Usuario.find({ 
-    recibeTurnos: true, // Si recibe turnos, va al catálogo
+    recibeTurnos: true,
     activo: true 
   }).select('-password');
 };
 
 export const obtenerPeluqueroPorId = async (id: string) => {
-  // 🔥 LO MISMO ACÁ
   const peluquero = await Usuario.findOne({ 
     _id: id, 
     recibeTurnos: true 
   }).select('-password');
   
   if (!peluquero) throw new Error('Profesional no encontrado o no disponible');
-  
   return peluquero;
 };

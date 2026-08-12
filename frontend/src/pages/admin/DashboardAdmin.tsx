@@ -30,7 +30,7 @@ export const DashboardAdmin: React.FC = () => {
         setCargando(true);
         const [turnos, staffData] = await Promise.all([
             obtenerTurnosHoyAdmin(token),
-            getStaff()
+            getStaff(token)
         ]);
         
         setTurnosHoy(turnos);

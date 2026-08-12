@@ -33,7 +33,7 @@ export const TurnosAdminPage: React.FC = () => {
                 setCargando(true);
                 const [turnos, staffData] = await Promise.all([
                     obtenerTurnosSemanaAdmin(token),
-                    getStaff()
+                    getStaff(token)
                 ]);
                 setTurnosDB(turnos);
                 setStaffDB(staffData.filter((p: any) => p.activo));

@@ -1,34 +1,53 @@
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
 
-// [GET] Traer la lista de todos los barberos
-export const getStaff = async () => {
-  try {
-    const respuesta = await fetch(`${API_URL}/api/peluqueros`);
-    if (!respuesta.ok) throw new Error('Error al obtener el staff');
-    return await respuesta.json();
-  } catch (error) {
-    console.error("Error en getPeluqueros:", error);
-    return [];
+export const getStaff = async (token?: string | null) => {
+  // Si hay token, apuntamos a la ruta protegida (Todo el staff)
+  // Si no hay token, apuntamos a la ruta pública (Solo activos)
+  const url = token ? `${API_URL}/api/peluqueros` : `${API_URL}/api/peluqueros/activos`;
+
+  const headers: any = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`; // Mostramos la pulsera VIP
   }
+
+  const respuesta = await fetch(url, { headers });
+  const data = await respuesta.json();
+
+  if (!respuesta.ok) throw new Error(data.error || data.mensaje || 'Error al obtener staff');
+  return data;
 };
 
-// [GET] Traer un solo barbero por su ID (Para el portafolio VIP)
-export const getBarberoPorId = async (id: string) => {
-  try {
-    const respuesta = await fetch(`${API_URL}/api/staff/${id}`);
-    if (!respuesta.ok) throw new Error('Error al obtener el perfil del barbero');
-    return await respuesta.json();
-  } catch (error) {
-    console.error("Error en getBarberoPorId:", error);
-    return null;
-  }
+// Crear
+export const crearStaff = async (staffData: any, token: string) => {
+  const respuesta = await fetch(`${API_URL}/api/peluqueros`, { // 🔥
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(staffData)
+  });
+  const data = await respuesta.json();
+  if (!respuesta.ok) throw new Error(data.error || 'Error al crear miembro');
+  return data;
 };
 
-// ---------------------------------------------------------
-// EJEMPLO FUTURO ABM
-// ---------------------------------------------------------
-/*
-export const crearBarbero = async (datos) => { ... }
-export const actualizarBarbero = async (id, datos) => { ... }
-export const eliminarBarbero = async (id) => { ... }
-*/
+// Actualizar
+export const actualizarStaff = async (id: string, staffData: any, token: string) => {
+  const respuesta = await fetch(`${API_URL}/api/peluqueros/${id}`, { // 🔥
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(staffData)
+  });
+  const data = await respuesta.json();
+  if (!respuesta.ok) throw new Error(data.error || 'Error al actualizar');
+  return data;
+};
+
+// Eliminar
+export const eliminarStaff = async (id: string, token: string) => {
+  const respuesta = await fetch(`${API_URL}/api/peluqueros/${id}`, { // 🔥
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` }
+  });
+  const data = await respuesta.json();
+  if (!respuesta.ok) throw new Error(data.error || 'Error al eliminar');
+  return data;
+};
