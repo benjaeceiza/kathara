@@ -2,34 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User, Mail, Phone, Camera, Save, Edit2, 
-  History, Star, ShieldCheck, AlertTriangle, 
-  Lock, Key, ChevronDown, ChevronUp, Trash2,
-  LogOut, Settings, Sun, Moon, Palette
+  History, Star, ShieldCheck, Lock, Key, 
+  ChevronDown, ChevronUp, Trash2, LogOut, 
+  Settings, Sun, Moon, Palette
 } from 'lucide-react';
 
 import { useAuthStore } from '../../../store/authStore';
-import { useThemeStore } from '../../../store/themeStore'; // 🔥 Importamos el store del tema
+import { useThemeStore } from '../../../store/themeStore'; 
 import { actualizarDatosPersonales, cambiarClave, actualizarAvatar, eliminarAvatar } from '../../../services/usuarioService';
 import { Toast } from '../../../components/ui/Toast';
 import { ImageCropper } from '../../../components/ui/ImageCropper';
 import { getCroppedImg } from '../../../components/utils/cropImage';
+import { PerfilSkeleton } from '../../../components/skeletons/PerfilSkeleton'; // 🔥 Importamos el esqueleto
 
 export default function PerfilPage() {
   const navigate = useNavigate();
   const { usuario, actualizarUsuario, logout } = useAuthStore();
-  
-  // 🔥 Traemos el tema y la función para cambiarlo desde el estado global
   const { tema, toggleTema } = useThemeStore(); 
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const estadisticas = {
-    turnosCompletados: usuario?.turnosCompletados || 0,
-    faltas: usuario?.faltas || 0,
-    exentoSena: usuario?.exentoSena || false, 
-    miembroDesde: usuario?.fechaCreacion ? new Date(usuario.fechaCreacion).toLocaleDateString() : "Reciente"
-  };
-
+  const [cargandoPerfil, setCargandoPerfil] = useState(true); // 🔥 Estado inicial de carga
   const [editando, setEditando] = useState(false);
   const [mostrarSeguridad, setMostrarSeguridad] = useState(false);
   const [menuAvatarAbierto, setMenuAvatarAbierto] = useState(false);
@@ -48,9 +41,9 @@ export default function PerfilPage() {
   });
 
   const [formData, setFormData] = useState({
-    nombre: usuario?.nombre || '',
-    apellido: usuario?.apellido || '',
-    telefono: usuario?.telefono || '',
+    nombre: '',
+    apellido: '',
+    telefono: '',
   });
 
   const [passwords, setPasswords] = useState({
@@ -58,6 +51,12 @@ export default function PerfilPage() {
     nueva: '',
     confirmar: ''
   });
+
+  // 🔥 Mini delay para lucir el Skeleton y evitar parpadeos
+  useEffect(() => {
+    const timer = setTimeout(() => setCargandoPerfil(false), 600);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (usuario) {
@@ -81,9 +80,6 @@ export default function PerfilPage() {
     setToast({ visible: true, mensaje, tipo });
   };
 
-  // ==========================================
-  // LÓGICA DE IMÁGENES Y AVATAR
-  // ==========================================
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -95,14 +91,11 @@ export default function PerfilPage() {
 
   const handleCropComplete = async (croppedAreaPixels: any) => {
     if (!imagenSeleccionada) return;
-    
     try {
       setCargandoAvatar(true);
       setImagenSeleccionada(null);
-      
       const croppedFile = await getCroppedImg(imagenSeleccionada, croppedAreaPixels);
       const respuesta = await actualizarAvatar(croppedFile);
-      
       actualizarUsuario(respuesta.usuario);
       mostrarNotificacion('¡Foto de perfil actualizada!', 'success');
     } catch (error: any) {
@@ -115,11 +108,9 @@ export default function PerfilPage() {
 
   const handleEliminarAvatar = async () => {
     if (!window.confirm('¿Estás seguro de que querés eliminar tu foto de perfil?')) return;
-    
     try {
       setCargandoEliminar(true);
       const respuesta = await eliminarAvatar();
-      
       actualizarUsuario(respuesta.usuario);
       mostrarNotificacion('¡Foto eliminada correctamente!', 'success');
     } catch (error: any) {
@@ -129,9 +120,6 @@ export default function PerfilPage() {
     }
   };
 
-  // ==========================================
-  // LÓGICA DE FORMULARIOS Y SESIÓN
-  // ==========================================
   const handleGuardarDatos = async () => {
     try {
       setCargandoDatos(true);
@@ -140,7 +128,6 @@ export default function PerfilPage() {
         apellido: formData.apellido,
         telefono: formData.telefono
       });
-
       actualizarUsuario(respuesta.usuario);
       mostrarNotificacion('¡Datos guardados con éxito!', 'success');
       setEditando(false);
@@ -157,7 +144,6 @@ export default function PerfilPage() {
       mostrarNotificacion("Las contraseñas nuevas no coinciden", 'error');
       return;
     }
-
     try {
       setCargandoPass(true);
       await cambiarClave(passwords.actual, passwords.nueva);
@@ -171,7 +157,6 @@ export default function PerfilPage() {
     }
   };
 
-  // 🔥 Función súper limpia que evalúa si hace falta cambiar el tema global
   const handleCambiarTema = (nuevoTema: 'dark' | 'light') => {
     if (tema !== nuevoTema) {
       toggleTema();
@@ -184,131 +169,141 @@ export default function PerfilPage() {
     navigate('/');
   };
 
-  if (!usuario) return null;
+  // 🔥 MOSTRAMOS EL SKELETON
+  if (cargandoPerfil || !usuario) return <PerfilSkeleton />;
+
+  const estadisticas = {
+    turnosCompletados: usuario?.turnosCompletados || 0,
+    faltas: usuario?.faltas || 0,
+    exentoSena: usuario?.exentoSena || false, 
+    miembroDesde: usuario?.fechaCreacion ? new Date(usuario.fechaCreacion).toLocaleDateString() : "Reciente"
+  };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn pb-12 relative">
+    <div className="max-w-5xl mx-auto space-y-6 animate-fadeIn pb-12 relative pt-8 px-4 sm:px-0">
       
       {/* HEADER */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
-          <Settings className="w-8 h-8 text-orange-500" /> Ajustes de Cuenta
+      <div className="mb-8 transition-colors duration-700">
+        <h1 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-3 transition-colors">
+          <Settings className="w-8 h-8 text-zinc-900 dark:text-white" /> Ajustes de Cuenta
         </h1>
-        <p className="text-zinc-400 mt-1">Gestioná tu acceso, preferencias de sistema y perfil administrativo.</p>
+        <p className="text-zinc-600 dark:text-zinc-400 mt-1 transition-colors">Gestioná tu acceso, preferencias de sistema y perfil administrativo.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* 🔥 GRID PRINCIPAL: Pasamos de items-stretch a items-start para evitar el efecto chicle */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
-        {/* COLUMNA IZQUIERDA: Avatar y Reputación */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-zinc-900 border border-white/5 rounded-3xl p-8 flex flex-col items-center text-center relative overflow-visible group">
-            
-            {/* ZONA DEL AVATAR */}
+        {/* ========================================================= */}
+        {/* COLUMNA IZQUIERDA                                         */}
+        {/* ========================================================= */}
+        {/* 🔥 lg:sticky lg:top-28 hace que esta columna baje con vos si abrís el acordeón de contraseñas */}
+        <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8 lg:sticky lg:top-28">
+          
+          {/* TARJETA AVATAR */}
+          <div className="bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 rounded-3xl p-8 flex flex-col items-center text-center relative overflow-visible group transition-all shadow-md">
             <div className="relative mb-4">
               <input 
-                type="file" 
-                accept="image/jpeg, image/png, image/webp" 
-                className="hidden" 
-                ref={fileInputRef} 
-                onChange={handleFileSelect} 
+                type="file" accept="image/jpeg, image/png, image/webp" 
+                className="hidden" ref={fileInputRef} onChange={handleFileSelect} 
               />
-              
-              <div className="w-32 h-32 rounded-full bg-zinc-800 border-4 border-zinc-950 shadow-2xl flex items-center justify-center overflow-hidden relative">
+              <div className="w-32 h-32 rounded-full bg-zinc-200 dark:bg-zinc-800 border-4 border-white dark:border-zinc-950 shadow-xl flex items-center justify-center overflow-hidden relative transition-colors">
                 {(cargandoAvatar || cargandoEliminar) && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10 backdrop-blur-sm">
-                    <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 bg-white/60 dark:bg-black/60 flex items-center justify-center z-10 backdrop-blur-sm transition-colors">
+                    <div className="w-6 h-6 border-2 border-zinc-900 dark:border-white border-t-transparent rounded-full animate-spin"></div>
                   </div>
                 )}
-
                 {usuario?.avatar ? (
                   <img src={usuario.avatar} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-4xl font-black text-orange-500 uppercase">
+                  <span className="text-4xl font-black text-zinc-900 dark:text-white uppercase transition-colors">
                     {usuario.nombre.charAt(0)}{usuario.apellido.charAt(0)}
                   </span>
                 )}
               </div>
-              
               <button 
-                onClick={() => {
-                  if (usuario?.avatar) {
-                    setMenuAvatarAbierto(!menuAvatarAbierto);
-                  } else {
-                    fileInputRef.current?.click();
-                  }
-                }}
+                onClick={() => { usuario?.avatar ? setMenuAvatarAbierto(!menuAvatarAbierto) : fileInputRef.current?.click(); }}
                 disabled={cargandoAvatar || cargandoEliminar}
-                className="absolute bottom-0 right-0 p-3 bg-orange-500 text-black rounded-full hover:bg-orange-400 transition-all shadow-lg hover:scale-110 cursor-pointer disabled:opacity-50 z-20"
+                className="absolute bottom-0 right-0 p-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 rounded-full hover:scale-110 transition-all shadow-lg cursor-pointer disabled:opacity-50 z-20"
               >
                 {usuario?.avatar ? <Edit2 className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
               </button>
-
+              {menuAvatarAbierto && <div className="fixed inset-0 z-20" onClick={() => setMenuAvatarAbierto(false)} />}
               {menuAvatarAbierto && (
-                <div className="fixed inset-0 z-20" onClick={() => setMenuAvatarAbierto(false)} />
-              )}
-
-              {menuAvatarAbierto && (
-                <div className="absolute top-[105%] left-1/2 -translate-x-1/2 w-48 bg-zinc-800 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-30 animate-fadeIn">
+                <div className="absolute top-[105%] left-1/2 -translate-x-1/2 w-48 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden z-30 animate-fadeIn transition-colors">
                   <button 
-                    onClick={() => {
-                      setMenuAvatarAbierto(false);
-                      fileInputRef.current?.click();
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-white hover:bg-white/5 transition-colors cursor-pointer"
+                    onClick={() => { setMenuAvatarAbierto(false); fileInputRef.current?.click(); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
                   >
-                    <Camera className="w-4 h-4 text-orange-500" /> Cambiar foto
+                    <Camera className="w-4 h-4 text-zinc-900 dark:text-white" /> Cambiar foto
                   </button>
                   <button 
-                    onClick={() => {
-                      setMenuAvatarAbierto(false);
-                      handleEliminarAvatar();
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-400 hover:bg-red-500/10 transition-colors border-t border-white/5 cursor-pointer"
+                    onClick={() => { setMenuAvatarAbierto(false); handleEliminarAvatar(); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors border-t border-zinc-100 dark:border-white/5 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" /> Eliminar foto
                   </button>
                 </div>
               )}
             </div>
-
-            <h2 className="text-2xl font-black text-white">{usuario.nombre} {usuario.apellido}</h2>
-            <p className="text-zinc-500 text-sm mt-1 uppercase tracking-widest">{usuario.rol}</p>
+            <h2 className="text-2xl font-black text-zinc-900 dark:text-white transition-colors">{usuario.nombre} {usuario.apellido}</h2>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1 uppercase tracking-widest font-bold transition-colors">{usuario.rol}</p>
           </div>
 
-          <div className="bg-zinc-900 border border-white/5 rounded-3xl p-6">
-            <h3 className="text-sm font-bold text-zinc-500 uppercase tracking-widest mb-4">Métricas de Cuenta</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-black border border-white/5">
+          {/* TARJETA MÉTRICAS */}
+          <div className="bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 rounded-3xl p-6 shadow-md transition-colors">
+            <h3 className="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-4 transition-colors">Métricas de Cuenta</h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/80 dark:bg-black/50 border border-zinc-200/50 dark:border-white/5 transition-colors">
                 <div className="flex items-center gap-3">
-                  <History className="w-5 h-5 text-orange-500" />
-                  <span className="text-sm font-bold text-white">Sesiones Activas</span>
+                  <History className="w-5 h-5 text-zinc-900 dark:text-white" />
+                  <span className="text-sm font-bold text-zinc-900 dark:text-white transition-colors">Sesiones Activas</span>
                 </div>
-                <span className="text-lg font-black text-white">1</span>
+                <span className="text-lg font-black text-zinc-900 dark:text-white transition-colors">1</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-black border border-white/5">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-white/80 dark:bg-black/50 border border-zinc-200/50 dark:border-white/5 transition-colors">
                 <div className="flex items-center gap-3">
-                  <Star className="w-5 h-5 text-orange-500" />
-                  <span className="text-sm font-bold text-white">Miembro Desde</span>
+                  <Star className="w-5 h-5 text-zinc-900 dark:text-white" />
+                  <span className="text-sm font-bold text-zinc-900 dark:text-white transition-colors">Miembro Desde</span>
                 </div>
-                <span className="text-sm font-black text-zinc-400">{estadisticas.miembroDesde}</span>
+                <span className="text-sm font-black text-zinc-500 dark:text-zinc-400 transition-colors">{estadisticas.miembroDesde}</span>
               </div>
             </div>
           </div>
+
+          {/* 🔥 ZONA DE PELIGRO: Le sacamos el flex-1 para que no se estire */}
+          <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-3xl p-6 text-center transition-colors">
+            <div className="mb-4">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <LogOut className="w-5 h-5 text-red-500" />
+              </div>
+              <h3 className="text-lg font-black text-red-600 dark:text-red-400 mb-1">Finalizar Sesión</h3>
+              <p className="text-xs text-red-500/80 dark:text-red-400/80 leading-relaxed px-2">Saldrás de tu cuenta de forma segura.</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="w-full py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 cursor-pointer active:scale-95 uppercase text-xs tracking-widest"
+            >
+              Cerrar Sesión
+            </button>
+          </div>
+
         </div>
 
-        {/* COLUMNA DERECHA: Configuración Completa */}
-        <div className="lg:col-span-8 space-y-6">
+        {/* ========================================================= */}
+        {/* COLUMNA DERECHA                                           */}
+        {/* ========================================================= */}
+        <div className="lg:col-span-8 flex flex-col gap-6 lg:gap-8">
           
           {/* MÓDULO 1: DATOS Y CONTACTO */}
-          <div className="bg-zinc-900 border border-white/5 rounded-3xl p-6 sm:p-8">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-black text-white flex items-center gap-2">
-                <User className="w-5 h-5 text-orange-500" /> Información de Contacto
+          <div className="bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-md transition-colors">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+              <h3 className="text-xl font-black text-zinc-900 dark:text-white flex items-center gap-2 transition-colors">
+                <User className="w-5 h-5 text-zinc-900 dark:text-white" /> Información de Contacto
               </h3>
               {!editando ? (
                 <button
                   onClick={() => setEditando(true)}
-                  className="flex justify-center items-center gap-2 px-4 h-10 bg-black hover:bg-zinc-800 border border-white/10 text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                  className="flex justify-center items-center gap-2 px-5 h-10 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white rounded-xl text-xs font-bold uppercase tracking-widest transition-all cursor-pointer shadow-sm"
                 >
                   <Edit2 className="w-4 h-4" /> Editar
                 </button>
@@ -316,7 +311,7 @@ export default function PerfilPage() {
                 <button
                   onClick={handleGuardarDatos}
                   disabled={cargandoDatos}
-                  className="flex justify-center items-center gap-2 px-4 h-10 bg-orange-500 hover:bg-orange-400 text-black rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-orange-500/20 cursor-pointer disabled:opacity-50"
+                  className="flex justify-center items-center gap-2 px-5 h-10 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:scale-105 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg cursor-pointer disabled:opacity-50"
                 >
                   {cargandoDatos ? 'Guardando...' : <><Save className="w-4 h-4" /> Guardar</>}
                 </button>
@@ -326,20 +321,20 @@ export default function PerfilPage() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Nombre</label>
+                  <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 transition-colors">Nombre</label>
                   <input 
                     type="text" name="nombre" disabled={!editando} value={formData.nombre} onChange={handleChange} maxLength={15}
-                    className={`w-full border rounded-xl py-3 px-4 text-white focus:outline-none transition-colors ${
-                      editando ? 'bg-black border-white/10 focus:border-orange-500' : 'bg-black/50 border-white/5 text-zinc-400 cursor-not-allowed'
+                    className={`w-full border rounded-xl py-3 px-4 focus:outline-none transition-colors ${
+                      editando ? 'bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white focus:border-zinc-900 dark:focus:border-white shadow-inner' : 'bg-zinc-100/50 dark:bg-black/30 border-zinc-200 dark:border-white/5 text-zinc-500 cursor-not-allowed'
                     }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Apellido</label>
+                  <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 transition-colors">Apellido</label>
                   <input 
                     type="text" name="apellido" disabled={!editando} value={formData.apellido} onChange={handleChange} maxLength={15}
-                    className={`w-full border rounded-xl py-3 px-4 text-white focus:outline-none transition-colors ${
-                      editando ? 'bg-black border-white/10 focus:border-orange-500' : 'bg-black/50 border-white/5 text-zinc-400 cursor-not-allowed'
+                    className={`w-full border rounded-xl py-3 px-4 focus:outline-none transition-colors ${
+                       editando ? 'bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white focus:border-zinc-900 dark:focus:border-white shadow-inner' : 'bg-zinc-100/50 dark:bg-black/30 border-zinc-200 dark:border-white/5 text-zinc-500 cursor-not-allowed'
                     }`}
                   />
                 </div>
@@ -347,24 +342,24 @@ export default function PerfilPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Correo Electrónico (Solo Lectura)</label>
+                  <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 transition-colors">Correo (Solo Lectura)</label>
                   <div className="relative">
-                    <Mail className="w-5 h-5 text-zinc-600 absolute left-4 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-5 h-5 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" />
                     <input 
                       type="email" disabled value={usuario?.email || ''}
-                      className="w-full bg-black/50 border border-white/5 rounded-xl py-3 pl-12 pr-4 text-zinc-500 cursor-not-allowed focus:outline-none"
+                      className="w-full bg-zinc-100/50 dark:bg-black/30 border border-zinc-200 dark:border-white/5 rounded-xl py-3 pl-12 pr-4 text-zinc-500 cursor-not-allowed focus:outline-none transition-colors"
                     />
-                    <ShieldCheck className="w-5 h-5 text-green-500 absolute right-4 top-1/2 -translate-y-1/2" />
+                    <ShieldCheck className="w-5 h-5 text-emerald-500 absolute right-4 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Teléfono / WhatsApp</label>
+                  <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 transition-colors">Teléfono / WhatsApp</label>
                   <div className="relative">
-                    <Phone className={`w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${editando ? 'text-orange-500' : 'text-zinc-600'}`} />
+                    <Phone className={`w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${editando ? 'text-zinc-900 dark:text-white' : 'text-zinc-400'}`} />
                     <input 
                       type="tel" name="telefono" disabled={!editando} value={formData.telefono} onChange={handleChange}
-                      className={`w-full border rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none transition-colors ${
-                        editando ? 'bg-black border-white/10 focus:border-orange-500' : 'bg-black/50 border-white/5 text-zinc-400 cursor-not-allowed'
+                      className={`w-full border rounded-xl py-3 pl-12 pr-4 focus:outline-none transition-colors ${
+                         editando ? 'bg-zinc-50 dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-white focus:border-zinc-900 dark:focus:border-white shadow-inner' : 'bg-zinc-100/50 dark:bg-black/30 border-zinc-200 dark:border-white/5 text-zinc-500 cursor-not-allowed'
                       }`}
                     />
                   </div>
@@ -374,50 +369,50 @@ export default function PerfilPage() {
           </div>
 
           {/* MÓDULO 2: SEGURIDAD */}
-          <div className="bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden transition-all duration-300">
+          <div className="bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 rounded-3xl overflow-hidden transition-all duration-300 shadow-md">
             <button 
               onClick={() => setMostrarSeguridad(!mostrarSeguridad)}
-              className="w-full flex items-center justify-between p-6 sm:p-8 hover:bg-zinc-800/50 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between p-6 sm:p-8 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <Lock className="w-5 h-5 text-orange-500" />
-                <h3 className="text-xl font-black text-white">Seguridad y Contraseña</h3>
+                <Lock className="w-5 h-5 text-zinc-900 dark:text-white" />
+                <h3 className="text-xl font-black text-zinc-900 dark:text-white transition-colors">Seguridad y Contraseña</h3>
               </div>
               {mostrarSeguridad ? <ChevronUp className="w-5 h-5 text-zinc-500" /> : <ChevronDown className="w-5 h-5 text-zinc-500" />}
             </button>
 
             {mostrarSeguridad && (
-              <div className="p-6 sm:p-8 pt-0 border-t border-white/5 animate-fadeIn">
+              <div className="p-6 sm:p-8 pt-0 border-t border-zinc-200/50 dark:border-white/5 animate-fadeIn">
                 <form onSubmit={handleCambiarPassword} className="space-y-6 mt-6">
                   <div>
-                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Contraseña Actual</label>
+                    <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 transition-colors">Contraseña Actual</label>
                     <div className="relative">
-                      <Key className="w-5 h-5 text-zinc-600 absolute left-4 top-1/2 -translate-y-1/2" />
+                      <Key className="w-5 h-5 text-zinc-400 absolute left-4 top-1/2 -translate-y-1/2" />
                       <input 
                         type="password" name="actual" required disabled={cargandoPass}
                         value={passwords.actual} onChange={handlePasswordChange}
                         placeholder="Ingresá tu contraseña actual"
-                        className="w-full bg-black border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors shadow-inner"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Nueva Contraseña</label>
+                      <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 transition-colors">Nueva Contraseña</label>
                       <input 
                         type="password" name="nueva" required minLength={6} disabled={cargandoPass}
                         value={passwords.nueva} onChange={handlePasswordChange}
                         placeholder="Mínimo 6 caracteres"
-                        className="w-full bg-black border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl py-3 px-4 text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors shadow-inner"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Confirmar Nueva</label>
+                      <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2 transition-colors">Confirmar Nueva</label>
                       <input 
                         type="password" name="confirmar" required minLength={6} disabled={cargandoPass}
                         value={passwords.confirmar} onChange={handlePasswordChange}
                         placeholder="Repetí la contraseña"
-                        className="w-full bg-black border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-orange-500 transition-colors"
+                        className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl py-3 px-4 text-zinc-900 dark:text-white focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors shadow-inner"
                       />
                     </div>
                   </div>
@@ -425,7 +420,7 @@ export default function PerfilPage() {
                     <button 
                       type="submit"
                       disabled={cargandoPass || !passwords.actual || !passwords.nueva || !passwords.confirmar}
-                      className="w-52 flex justify-center items-center py-3 bg-zinc-800 hover:bg-orange-500 hover:text-black text-white rounded-xl text-xs font-black uppercase tracking-widest transition-all disabled:opacity-50"
+                      className="w-full sm:w-52 flex justify-center items-center py-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:scale-105 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-lg disabled:opacity-50"
                     >
                       {cargandoPass ? 'Procesando...' : 'Actualizar Clave'}
                     </button>
@@ -436,24 +431,23 @@ export default function PerfilPage() {
           </div>
 
           {/* MÓDULO 3: PREFERENCIAS DEL SISTEMA */}
-          <div className="bg-zinc-900 border border-white/5 rounded-3xl p-6 sm:p-8">
+          <div className="bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-md transition-colors">
              <div className="flex items-center gap-3 mb-6">
-                <Palette className="w-5 h-5 text-orange-500" />
-                <h3 className="text-xl font-black text-white">Preferencias Visuales</h3>
+                <Palette className="w-5 h-5 text-zinc-900 dark:text-white transition-colors" />
+                <h3 className="text-xl font-black text-zinc-900 dark:text-white transition-colors">Preferencias Visuales</h3>
              </div>
              
-             <div className="flex flex-col sm:flex-row items-center gap-4 bg-black/50 p-4 rounded-2xl border border-white/5">
-                <div className="flex-1">
-                  <h4 className="text-sm font-bold text-white mb-1">Apariencia de la Interfaz</h4>
-                  <p className="text-xs text-zinc-500">Personalizá cómo ves el panel administrativo.</p>
+             <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/80 dark:bg-black/50 p-4 rounded-2xl border border-zinc-200/50 dark:border-white/5 transition-colors">
+                <div className="flex-1 text-center sm:text-left">
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-white mb-1 transition-colors">Apariencia de la Interfaz</h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 transition-colors">Personalizá cómo ves el panel administrativo.</p>
                 </div>
                 
-                {/* 🔥 Usamos la variable 'tema' que trajimos del store para marcar el botón activo */}
-                <div className="flex items-center gap-2 bg-zinc-950 p-1.5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-950 p-1.5 rounded-xl border border-zinc-200 dark:border-white/10 transition-colors">
                   <button
                     onClick={() => handleCambiarTema('light')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                      tema === 'light' ? 'bg-orange-500 text-black shadow-md' : 'text-zinc-500 hover:text-white'
+                      tema === 'light' ? 'bg-white text-zinc-900 shadow-sm border border-zinc-200' : 'text-zinc-500 hover:text-zinc-900'
                     }`}
                   >
                     <Sun className="w-4 h-4" /> Claro
@@ -461,29 +455,13 @@ export default function PerfilPage() {
                   <button
                     onClick={() => handleCambiarTema('dark')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                      tema === 'dark' ? 'bg-zinc-800 text-white shadow-md border border-white/10' : 'text-zinc-500 hover:text-white'
+                      tema === 'dark' ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700' : 'text-zinc-500 hover:text-white'
                     }`}
                   >
                     <Moon className="w-4 h-4" /> Oscuro
                   </button>
                 </div>
              </div>
-          </div>
-
-          {/* MÓDULO 4: ZONA DE PELIGRO (CERRAR SESIÓN) */}
-          <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-6 sm:p-8 mt-8 flex flex-col sm:flex-row justify-between items-center gap-6">
-            <div>
-              <h3 className="text-lg font-black text-red-500 flex items-center gap-2 mb-1">
-                <LogOut className="w-5 h-5" /> Finalizar Sesión
-              </h3>
-              <p className="text-sm text-red-400/80">Saldrás de tu cuenta de administrador de forma segura.</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-red-500/20 cursor-pointer"
-            >
-              Cerrar Sesión
-            </button>
           </div>
 
         </div>
