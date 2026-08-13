@@ -1,73 +1,73 @@
-
 import { MapPin, Clock, Phone, Share2, Heart } from 'lucide-react';
 import logo from "../assets/logo.png";
 
- const Footer: React.FC = () => {
+const Footer: React.FC = () => {
   return (
-    <footer className="bg-zinc-950 border-t border-white/10 pt-16 pb-12 text-zinc-400 font-sans mt-20">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/5">
+    // 🔥 Efecto Vidrio en el Footer
+    <footer className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-200/50 dark:border-white/10 pt-16 pb-12 text-zinc-600 dark:text-zinc-400 font-sans mt-20 transition-colors duration-700 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-zinc-200/50 dark:border-white/10">
         
         {/* Columna 1: Branding */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center  shadow-lg shadow-white/5 shrink-0">
-              <img src={logo} alt="Logo Kathara" className="w-full h-full object-contain" />
+            <div className="w-10 h-10 rounded-full bg-zinc-900 dark:bg-white flex items-center justify-center shadow-lg shrink-0 transition-colors duration-700">
+              <img src={logo} alt="Logo Kathara" className="w-full h-full object-contain dark:invert" />
             </div>
             <div>
-              <span className="font-black text-lg tracking-wider text-white uppercase block leading-none">Kathara</span>
-              <span className="text-[9px] text-orange-400 font-bold tracking-widest uppercase">Barber Studio</span>
+              <span className="font-black text-lg tracking-wider text-zinc-900 dark:text-white uppercase block leading-none transition-colors duration-700">Kathara</span>
+              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold tracking-widest uppercase transition-colors duration-700">Barber Studio</span>
             </div>
           </div>
-          <p className="text-xs leading-relaxed text-zinc-400">
+          <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
             Cuidado personal elevado al máximo nivel. Cortes de autor, rituales de barba tradicionales y un ambiente diseñado para tu desconexión.
           </p>
         </div>
 
         {/* Columna 2: Horarios */}
         <div className="space-y-3">
-          <h4 className="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-            <Clock className="w-4 h-4 text-orange-400" />
+          <h4 className="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2 transition-colors duration-700">
+            <Clock className="w-4 h-4 text-zinc-900 dark:text-white" />
             <span>Horarios de Atención</span>
           </h4>
-          <ul className="text-xs space-y-2 text-zinc-400">
+          <ul className="text-xs space-y-2 text-zinc-600 dark:text-zinc-400">
             <li className="flex justify-between font-medium">
               <span>Martes a Sábados:</span>
-              <span className="text-white font-bold">10:00 - 20:30 hs</span>
+              <span className="text-zinc-900 dark:text-white font-bold transition-colors duration-700">10:00 - 20:30 hs</span>
             </li>
             <li className="flex justify-between font-medium">
               <span>Lunes & Domingos:</span>
-              <span className="text-orange-400/80 font-bold">Cerrado</span>
+              <span className="text-zinc-400 dark:text-zinc-500 font-bold">Cerrado</span>
             </li>
           </ul>
         </div>
 
         {/* Columna 3: Ubicación & Contacto */}
         <div className="space-y-3">
-          <h4 className="text-xs font-extrabold text-white uppercase tracking-widest flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-orange-400" />
+          <h4 className="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-widest flex items-center gap-2 transition-colors duration-700">
+            <MapPin className="w-4 h-4 text-zinc-900 dark:text-white" />
             <span>El Salón</span>
           </h4>
-          <p className="text-xs text-zinc-400 leading-relaxed">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
             Villa Mercedes, San Luis, Argentina. <br />
-            <span className="text-zinc-500">Estacionamiento exclusivo para clientes del club.</span>
+            <span className="text-zinc-400 dark:text-zinc-500">Estacionamiento exclusivo para clientes del club.</span>
           </p>
           <div className="flex items-center gap-2 pt-1">
-            <Phone className="w-3.5 h-3.5 text-orange-400" />
-            <span className="text-xs font-bold text-white">+54 9 2657 00-0000</span>
+            <Phone className="w-3.5 h-3.5 text-zinc-900 dark:text-white transition-colors duration-700" />
+            <span className="text-xs font-bold text-zinc-900 dark:text-white transition-colors duration-700">+54 9 2657 00-0000</span>
           </div>
         </div>
 
         {/* Columna 4: Redes & Comunidad */}
         <div className="space-y-3">
-          <h4 className="text-xs font-extrabold text-white uppercase tracking-widest">
+          <h4 className="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-widest transition-colors duration-700">
             Comunidad Kathara
           </h4>
-          <p className="text-xs text-zinc-400">Seguinos para ver los últimos cortes, tendencias y beneficios del club VIP.</p>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400">Seguinos para ver los últimos cortes, tendencias y beneficios del club VIP.</p>
           <div className="flex gap-3 pt-2">
-            <a href="#" className="p-2.5 rounded-xl bg-zinc-900 border border-white/5 hover:border-orange-500 hover:text-orange-400 text-white transition-all">
+            <a href="#" className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-zinc-900 dark:hover:border-white text-zinc-900 dark:text-white transition-all">
               <Share2 className="w-4 h-4" />
             </a>
-            <a href="#" className="p-2.5 rounded-xl bg-zinc-900 border border-white/5 hover:border-orange-500 hover:text-orange-400 text-white transition-all">
+            <a href="#" className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-zinc-900 dark:hover:border-white text-zinc-900 dark:text-white transition-all">
               <span className="font-black text-xs px-1">IG</span>
             </a>
           </div>
@@ -80,7 +80,7 @@ import logo from "../assets/logo.png";
         <p>© 2026 Kathara Barber Studio. Todos los derechos reservados.</p>
         <p className="flex items-center gap-1">
           <span>Desarrollado con</span>
-          <Heart className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
+          <Heart className="w-3.5 h-3.5 text-zinc-900 dark:text-white fill-zinc-900 dark:fill-white transition-colors duration-700" />
           <span>para excelencia en cortes.</span>
         </p>
       </div>

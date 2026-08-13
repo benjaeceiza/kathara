@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'; 
-import { LayoutDashboard, CalendarDays, Scissors, Users, Globe, UserSquare, Briefcase, Settings, X } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Scissors, Users, Globe, UserSquare, Briefcase, Settings, X, Palette } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import logo from "../../assets/logo.png";
 
@@ -19,6 +19,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ menuAbierto, cerrarM
         { name: 'Servicios', path: '/admin/servicios', icon: <Scissors className="w-5 h-5" /> },
         { name: 'Staff', path: '/admin/staff', icon: <Users className="w-5 h-5" /> },
         { name: 'Portafolio', path: '/admin/portafolio', icon: <Briefcase className="w-5 h-5" /> }, 
+        { name: 'Apariencia', path: '/admin/apariencia', icon: <Palette className="w-5 h-5" /> }, 
     ];
 
     return (

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { useAuthStore } from '../../../store/authStore';
+import { useThemeStore } from '../../../store/themeStore'; // 🔥 Importamos el store del tema
 import { actualizarDatosPersonales, cambiarClave, actualizarAvatar, eliminarAvatar } from '../../../services/usuarioService';
 import { Toast } from '../../../components/ui/Toast';
 import { ImageCropper } from '../../../components/ui/ImageCropper';
@@ -16,6 +17,10 @@ import { getCroppedImg } from '../../../components/utils/cropImage';
 export default function PerfilPage() {
   const navigate = useNavigate();
   const { usuario, actualizarUsuario, logout } = useAuthStore();
+  
+  // 🔥 Traemos el tema y la función para cambiarlo desde el estado global
+  const { tema, toggleTema } = useThemeStore(); 
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const estadisticas = {
@@ -35,7 +40,6 @@ export default function PerfilPage() {
   const [cargandoEliminar, setCargandoEliminar] = useState(false);
 
   const [imagenSeleccionada, setImagenSeleccionada] = useState<string | null>(null);
-  const [tema, setTema] = useState<'dark' | 'light'>('dark');
 
   const [toast, setToast] = useState<{ visible: boolean; mensaje: string; tipo: 'success' | 'error' }>({
     visible: false,
@@ -167,14 +171,12 @@ export default function PerfilPage() {
     }
   };
 
+  // 🔥 Función súper limpia que evalúa si hace falta cambiar el tema global
   const handleCambiarTema = (nuevoTema: 'dark' | 'light') => {
-    setTema(nuevoTema);
-    if (nuevoTema === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    if (tema !== nuevoTema) {
+      toggleTema();
+      mostrarNotificacion(`Tema ${nuevoTema === 'dark' ? 'Oscuro' : 'Claro'} activado`, 'success');
     }
-    mostrarNotificacion(`Tema ${nuevoTema === 'dark' ? 'Oscuro' : 'Claro'} activado`, 'success');
   };
 
   const handleLogout = () => {
@@ -446,6 +448,7 @@ export default function PerfilPage() {
                   <p className="text-xs text-zinc-500">Personalizá cómo ves el panel administrativo.</p>
                 </div>
                 
+                {/* 🔥 Usamos la variable 'tema' que trajimos del store para marcar el botón activo */}
                 <div className="flex items-center gap-2 bg-zinc-950 p-1.5 rounded-xl border border-white/10">
                   <button
                     onClick={() => handleCambiarTema('light')}

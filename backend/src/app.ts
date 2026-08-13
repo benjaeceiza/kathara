@@ -8,6 +8,8 @@ import peluquerosRoutes from './routes/peluquerosRoutes';
 import usuariosRoutes from './routes/usuarioRoutes';
 import turnosRoutes from './routes/turnosRoutes';
 import portafolioRoutes from './routes/portafolioRoutes';
+import clientesRoutes from './routes/clientes.routes';
+import aparienciaRoutes from './routes/apariencia.routes';
 
 // Configuramos las variables de entorno
 dotenv.config();
@@ -27,9 +29,11 @@ app.use(express.json()); // Permite leer los JSON que mandemos en el body
 app.use('/api/auth', authRoutes);
 app.use('/api/servicios', serviciosRoutes);
 app.use('/api/peluqueros', peluquerosRoutes);
+app.use('/api/clientes', clientesRoutes)
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/portafolio', portafolioRoutes);
+app.use('/api/apariencia', aparienciaRoutes);
 
 
 // Arrancar el motor

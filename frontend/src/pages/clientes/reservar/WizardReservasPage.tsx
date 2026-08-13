@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
     Scissors, User, Calendar as CalendarIcon, Clock,
     ArrowLeft, CheckCircle2, ShieldCheck, Sparkles, CalendarX2
@@ -10,6 +10,7 @@ import { confirmarReserva, obtenerTurnosOcupados } from '../../../services/turno
 import { getServicios } from '../../../services/servicios.service';
 import { getStaff } from '../../../services/staff.service';
 import ModalReservaExitosa from '../../../components/modals/ModalReservaExitosa';
+import { WizardSkeleton } from '../../../components/skeletons/WizardSkeleton'; // 🔥 Importamos el esqueleto
 
 export const WizardReservasPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -46,6 +47,8 @@ export const WizardReservasPage: React.FC = () => {
     useEffect(() => {
         const fetchDatosIniciales = async () => {
             try {
+                // Simulamos un delay mínimo para que aprecies el skeleton premium
+                await new Promise(r => setTimeout(r, 800)); 
                 const [serviciosData, staffData] = await Promise.all([
                     getServicios(),
                     getStaff()
@@ -95,7 +98,6 @@ export const WizardReservasPage: React.FC = () => {
             const buscarOcupados = async () => {
                 setBuscandoTurnos(true);
                 try {
-                    // El backend nos devuelve los rangos ocupados { inicio, fin }
                     const rangosOcupados = await obtenerTurnosOcupados(reserva.profesional._id, reserva.fecha);
                     setTurnosOcupados(rangosOcupados || []);
                 } catch (error) {
@@ -122,45 +124,54 @@ export const WizardReservasPage: React.FC = () => {
     const seleccionarStaff = (prof: any) => { setReserva({ ...reserva, profesional: prof }); avanzar(); };
     const seleccionarHorario = (fecha: string, hora: string) => { setReserva({ ...reserva, fecha, hora }); avanzar(); };
 
-    // =========================================================================
-    // RENDERIZADO DE LOS PASOS
-    // =========================================================================
+    // 🔥 SI ESTÁ CARGANDO, MOSTRAMOS EL SKELETON DIRECTAMENTE
+    if (cargandoDatos) return <WizardSkeleton />;
 
+    // =========================================================================
+    // PASO 1: SERVICIOS
+    // =========================================================================
     const renderPaso1 = () => (
-        <div className="space-y-6 animate-fadeIn">
-            <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                <Scissors className="w-6 h-6 text-orange-500 animate-pulse" /> 1. Elegí tu Servicio
+        <div className="space-y-6 animate-fadeIn pb-4">
+            <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white flex items-center gap-2 transition-colors">
+                <Scissors className="w-5 h-5 text-zinc-900 dark:text-white" /> 1. Elegí tu Servicio
             </h2>
-
-            {cargandoDatos ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-zinc-400 mt-4 font-medium animate-pulse">Cargando servicios...</p>
-                </div>
-            ) : (
-                <div className="grid gap-4">
-                    {serviciosDB.map(srv => (
+            <div className="grid gap-3">
+                {serviciosDB.map(srv => {
+                    const activo = reserva.servicio?._id === srv._id;
+                    return (
                         <div
                             key={srv._id}
                             onClick={() => seleccionarServicio(srv)}
-                            className={`group p-5 rounded-2xl border cursor-pointer transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(249,115,22,0.1)] flex justify-between items-center overflow-hidden relative ${reserva.servicio?._id === srv._id ? 'bg-gradient-to-r from-orange-500/20 to-orange-500/5 border-orange-500' : 'bg-zinc-900 border-white/5 hover:border-white/20'}`}
+                            // 🔥 ESTILO GLASSMORPHISM Y ALTO CONTRASTE
+                            className={`group p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex justify-between items-center ${
+                                activo 
+                                ? 'bg-zinc-900 dark:bg-white border-transparent text-white dark:text-zinc-900 shadow-xl scale-[1.01]' 
+                                : 'bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border-zinc-200/50 dark:border-white/10 hover:bg-white/90 dark:hover:bg-zinc-900/70 hover:scale-[1.01]'
+                            }`}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-
-                            <div className="relative z-10">
-                                <h3 className={`font-bold text-lg transition-colors ${reserva.servicio?._id === srv._id ? 'text-orange-400' : 'text-white group-hover:text-orange-100'}`}>{srv.nombre}</h3>
-                                <p className="text-zinc-400 text-sm flex items-center gap-1.5 mt-1"><Clock className="w-3.5 h-3.5" /> {srv.duracionMinutos} min</p>
+                            <div>
+                                <h3 className={`font-bold text-base sm:text-lg transition-colors ${activo ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'}`}>
+                                    {srv.nombre}
+                                </h3>
+                                <p className={`text-sm flex items-center gap-1.5 mt-1 transition-colors ${activo ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                    <Clock className="w-3.5 h-3.5" /> {srv.duracionMinutos} min
+                                </p>
                             </div>
-                            <div className="text-right relative z-10">
-                                <span className="font-black text-2xl text-white block">${srv.precio}</span>
+                            <div className="text-right">
+                                <span className={`font-black text-xl sm:text-2xl block transition-colors ${activo ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'}`}>
+                                    ${srv.precio}
+                                </span>
                             </div>
                         </div>
-                    ))}
-                </div>
-            )}
+                    );
+                })}
+            </div>
         </div>
     );
 
+    // =========================================================================
+    // PASO 2: STAFF (FORMATO ROW / FILA)
+    // =========================================================================
     const renderPaso2 = () => {
         const staffFiltrado = staffDB.filter(prof => {
             if (!reserva.servicio) return true;
@@ -171,179 +182,182 @@ export const WizardReservasPage: React.FC = () => {
         });
 
         return (
-            <div className="space-y-6 animate-fadeIn">
-                <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                    <User className="w-6 h-6 text-orange-500 animate-pulse" /> 2. Elegí al Profesional
+            <div className="space-y-6 animate-fadeIn pb-4">
+                <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white flex items-center gap-2 transition-colors">
+                    <User className="w-5 h-5 text-zinc-900 dark:text-white" /> 2. Elegí al Profesional
                 </h2>
 
-                {cargandoDatos ? (
-                    <div className="flex flex-col items-center justify-center py-12">
-                        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                ) : staffFiltrado.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-zinc-900 border border-white/5 rounded-3xl animate-fadeIn">
-                        <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+                {staffFiltrado.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 px-4 text-center bg-white/60 dark:bg-zinc-900/40 border border-zinc-200/50 dark:border-white/10 backdrop-blur-md rounded-3xl animate-fadeIn">
+                        <div className="w-16 h-16 bg-zinc-200 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4">
                             <Scissors className="w-8 h-8 text-zinc-500" />
                         </div>
-                        <h3 className="text-white font-bold text-lg">Sin profesionales disponibles</h3>
+                        <h3 className="text-zinc-900 dark:text-white font-bold text-lg">Sin profesionales disponibles</h3>
                         <p className="text-zinc-500 text-sm mt-2 max-w-sm mx-auto">
-                            Actualmente ninguno de nuestros estilistas está realizando el servicio de <strong className="text-orange-400">{reserva.servicio?.nombre}</strong>.
+                            Ninguno de nuestros estilistas realiza el servicio seleccionado.
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                        {staffFiltrado.length > 0 && (
-                            <div onClick={() => seleccionarStaff({ ...staffFiltrado[0], nombre: "Sin Preferencia", sinPreferencia: true })} className="group p-6 rounded-3xl bg-gradient-to-b from-zinc-800 to-zinc-900 border border-white/5 hover:border-orange-500/50 cursor-pointer text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col items-center justify-center gap-3">
-                                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center border-2 border-dashed border-zinc-500 group-hover:border-orange-500 group-hover:bg-orange-500/10 transition-colors">
-                                    <Sparkles className="w-7 h-7 text-zinc-400 group-hover:text-orange-400 transition-colors" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-white group-hover:text-orange-400 transition-colors">Sin Preferencia</h3>
-                                    <p className="text-xs text-zinc-500 mt-1">El primero disponible</p>
-                                </div>
+                    // 🔥 GRID DE COLUMNAS (1 EN MÓVIL, 2 EN PC) PERO CON FLEX-ROW INTERNO
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        
+                        {/* BOTÓN SIN PREFERENCIA */}
+                        <div onClick={() => seleccionarStaff({ ...staffFiltrado[0], nombre: "Sin Preferencia", sinPreferencia: true })} 
+                             className="group p-4 rounded-2xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 hover:border-zinc-900 dark:hover:border-white cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center gap-4">
+                            <div className="w-14 h-14 shrink-0 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center border-2 border-dashed border-zinc-400 dark:border-zinc-500 group-hover:border-zinc-900 dark:group-hover:border-white transition-colors">
+                                <Sparkles className="w-6 h-6 text-zinc-500 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
                             </div>
-                        )}
+                            <div className="flex-1 text-left">
+                                <h3 className="font-bold text-zinc-900 dark:text-white transition-colors">Sin Preferencia</h3>
+                                <p className="text-xs text-zinc-500 mt-0.5">El primero disponible</p>
+                            </div>
+                        </div>
 
-                        {staffFiltrado.map(prof => (
-                            <div key={prof._id} onClick={() => seleccionarStaff(prof)} className={`group p-6 rounded-3xl border cursor-pointer text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(249,115,22,0.1)] overflow-hidden ${reserva.profesional?._id === prof._id ? 'bg-orange-500/10 border-orange-500 ring-2 ring-orange-500/20' : 'bg-zinc-900 border-white/5 hover:border-white/20'}`}>
-                                <div className="relative w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden border-2 border-zinc-800 group-hover:border-orange-500 transition-colors">
-                                    <img
-                                        src={prof.avatar || `https://ui-avatars.com/api/?name=${prof.nombre}+${prof.apellido}&background=27272a&color=f97316`}
-                                        alt={prof.nombre}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
+                        {/* LISTA DE STAFF EN FORMATO FILA */}
+                        {staffFiltrado.map(prof => {
+                            const activo = reserva.profesional?._id === prof._id;
+                            return (
+                                <div key={prof._id} onClick={() => seleccionarStaff(prof)} 
+                                     className={`group p-4 rounded-2xl border cursor-pointer transition-all duration-300 hover:-translate-y-1 flex items-center gap-4 overflow-hidden
+                                     ${activo ? 'bg-zinc-900 dark:bg-white border-transparent shadow-xl' : 'bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border-zinc-200/50 dark:border-white/10 hover:border-zinc-900 dark:hover:border-white'}`}>
+                                    
+                                    <div className={`w-14 h-14 shrink-0 rounded-full overflow-hidden border-2 transition-colors ${activo ? 'border-zinc-700 dark:border-zinc-200' : 'border-zinc-300 dark:border-zinc-700 group-hover:border-zinc-900 dark:group-hover:border-white'}`}>
+                                        <img
+                                            src={prof.avatar || `https://ui-avatars.com/api/?name=${prof.nombre}+${prof.apellido}&background=000&color=fff`}
+                                            alt={prof.nombre}
+                                            className={`w-full h-full object-cover transition-transform duration-500 ${activo ? '' : 'group-hover:grayscale-0 group-hover:scale-110'}`}
+                                        />
+                                    </div>
+                                    <div className="flex-1 text-left">
+                                        <h3 className={`font-bold transition-colors ${activo ? 'text-white dark:text-zinc-900' : 'text-zinc-900 dark:text-white'}`}>
+                                            {prof.nombre} {prof.apellido}
+                                        </h3>
+                                        <p className={`text-[10px] uppercase tracking-widest mt-0.5 font-bold transition-colors ${activo ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-500 dark:text-zinc-400'}`}>
+                                            {prof.tituloProfesional || 'Estilista'}
+                                        </p>
+                                    </div>
                                 </div>
-                                <h3 className="font-bold text-white">{prof.nombre} {prof.apellido}</h3>
-                                <p className="text-xs text-orange-400 uppercase tracking-widest mt-1 font-bold">
-                                    {prof.tituloProfesional || 'Estilista'}
-                                </p>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>
         );
     };
 
+    // =========================================================================
+    // PASO 3: FECHAS Y HORARIOS
+    // =========================================================================
     const renderPaso3 = () => {
         const nombreDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         const diasDisponibles: any[] = [];
-        const horariosProfesional = reserva.profesional?.horarios || []; //[cite: 8]
+        const horariosProfesional = reserva.profesional?.horarios || [];
 
-        let fechaTemp = new Date(); //[cite: 8]
-        
-        // 🔥 CAMBIO 1: Solo miramos 7 días para adelante (mucho más minimalista)
+        let fechaTemp = new Date();
         for (let i = 0; i < 7; i++) {
             const d = new Date(fechaTemp);
             d.setDate(d.getDate() + i);
             const nombreDia = nombreDias[d.getDay()];
-            const configDia = horariosProfesional.find((h: any) => h.dia === nombreDia); //[cite: 8]
+            const configDia = horariosProfesional.find((h: any) => h.dia === nombreDia);
 
             if (configDia && configDia.activo) {
-                const fechaString = d.toISOString().split('T')[0]; //[cite: 8]
-                diasDisponibles.push({
-                    fechaString, //[cite: 8]
-                    display: `${nombreDia.substring(0, 3)} ${d.getDate()}`, //[cite: 8]
-                    configDia //[cite: 8]
-                });
+                const fechaString = d.toISOString().split('T')[0];
+                diasDisponibles.push({ fechaString, display: `${nombreDia.substring(0, 3)} ${d.getDate()}`, configDia });
             }
         }
 
-        let turnosDelDia: { hora: string, ocupado: boolean }[] = []; //[cite: 8]
-        const diaSeleccionado = diasDisponibles.find(d => d.fechaString === reserva.fecha); //[cite: 8]
+        let turnosDelDia: { hora: string, ocupado: boolean }[] = [];
+        const diaSeleccionado = diasDisponibles.find(d => d.fechaString === reserva.fecha);
 
         if (diaSeleccionado && diaSeleccionado.configDia && !buscandoTurnos) {
-    
            const duracionServicio = parseInt(reserva.servicio?.duracionMinutos, 10) || 30;
+            const [hIni, mIni] = diaSeleccionado.configDia.horaInicio.split(':').map(Number);
+            const [hFin, mFin] = diaSeleccionado.configDia.horaFin.split(':').map(Number);
 
-            const [hIni, mIni] = diaSeleccionado.configDia.horaInicio.split(':').map(Number); //[cite: 8]
-            const [hFin, mFin] = diaSeleccionado.configDia.horaFin.split(':').map(Number); //[cite: 8]
+            let horaActual = new Date();
+            horaActual.setHours(hIni, mIni, 0, 0);
 
-            let horaActual = new Date(); //[cite: 8]
-            horaActual.setHours(hIni, mIni, 0, 0); //[cite: 8]
+            const horaLimite = new Date();
+            horaLimite.setHours(hFin, mFin, 0, 0);
 
-            const horaLimite = new Date(); //[cite: 8]
-            horaLimite.setHours(hFin, mFin, 0, 0); //[cite: 8]
+            while (horaActual.getTime() + (duracionServicio * 60000) <= horaLimite.getTime()) {
+                const horaString = horaActual.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+                const horaFinSlot = new Date(horaActual.getTime() + (duracionServicio * 60000));
 
-            while (horaActual.getTime() + (duracionServicio * 60000) <= horaLimite.getTime()) { //[cite: 8]
-                const horaString = horaActual.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false }); //[cite: 8]
-                const horaFinSlot = new Date(horaActual.getTime() + (duracionServicio * 60000)); //[cite: 8]
-
-                // Chequeo de superposición matemática contra los rangos de la BD
-                const estaOcupado = turnosOcupados.some((rangoOcupado: any) => { //[cite: 8]
-                    if (typeof rangoOcupado === 'string') return rangoOcupado === horaString; //[cite: 8]
-                    const inicioOcupado = new Date(rangoOcupado.inicio); //[cite: 8]
-                    const finOcupado = new Date(rangoOcupado.fin); //[cite: 8]
-                    return (horaActual < finOcupado) && (horaFinSlot > inicioOcupado); //[cite: 8]
+                const estaOcupado = turnosOcupados.some((rangoOcupado: any) => {
+                    if (typeof rangoOcupado === 'string') return rangoOcupado === horaString;
+                    const inicioOcupado = new Date(rangoOcupado.inicio);
+                    const finOcupado = new Date(rangoOcupado.fin);
+                    return (horaActual < finOcupado) && (horaFinSlot > inicioOcupado);
                 });
 
-                turnosDelDia.push({
-                    hora: horaString, //[cite: 8]
-                    ocupado: estaOcupado //[cite: 8]
-                });
-
-                // 🔥 CAMBIO 3: Acá da el salto del intervalo EXACTO según lo que dura el servicio
-                horaActual.setMinutes(horaActual.getMinutes() + duracionServicio); //[cite: 8]
+                turnosDelDia.push({ hora: horaString, ocupado: estaOcupado });
+                horaActual.setMinutes(horaActual.getMinutes() + duracionServicio);
             }
         }
 
         return (
-            <div className="space-y-8 animate-fadeIn">
-                <h2 className="text-2xl font-black text-white flex items-center gap-2"><CalendarIcon className="w-6 h-6 text-orange-500 animate-bounce" /> 3. Elegí Fecha y Hora</h2>
+            <div className="space-y-6 animate-fadeIn pb-4">
+                <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white flex items-center gap-2"><CalendarIcon className="w-5 h-5 text-zinc-900 dark:text-white" /> 3. Elegí Fecha y Hora</h2>
 
                 {diasDisponibles.length === 0 ? (
-                    <div className="p-8 text-center bg-zinc-900 border border-white/5 rounded-3xl">
-                        <CalendarX2 className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-                        <h4 className="text-white font-bold">Profesional sin horarios</h4>
+                    <div className="p-8 text-center bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 rounded-3xl">
+                        <CalendarX2 className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
+                        <h4 className="text-zinc-900 dark:text-white font-bold">Profesional sin horarios</h4>
                         <p className="text-zinc-500 text-sm mt-1">Este profesional no tiene horarios configurados todavía.</p>
                     </div>
                 ) : (
                     <>
-                        {/* CARRUSEL DE DÍAS (Ahora de 7 nomás) */}
-                        <div className="flex gap-3 overflow-x-auto pb-4 pt-2 px-1 scrollbar-hide snap-x snap-mandatory">
-                            {diasDisponibles.map((diaInfo) => (
+                        <div className="flex gap-3 overflow-x-auto pb-2 px-1 scrollbar-hide snap-x snap-mandatory">
+                            {diasDisponibles.map((diaInfo) => {
+                                const activo = reserva.fecha === diaInfo.fechaString;
+                                return (
                                 <div
-                                    key={diaInfo.fechaString} //[cite: 8]
-                                    onClick={() => setReserva({ ...reserva, fecha: diaInfo.fechaString, hora: '' })} //[cite: 8]
-                                    className={`shrink-0 snap-center px-8 py-5 rounded-2xl border cursor-pointer text-center transition-all duration-300 hover:-translate-y-1 ${reserva.fecha === diaInfo.fechaString ? 'bg-gradient-to-br from-orange-500 to-amber-500 border-transparent text-black shadow-lg shadow-orange-500/30' : 'bg-zinc-900 border-white/5 text-zinc-400 hover:text-white hover:border-white/20'}`} //[cite: 8]
+                                    key={diaInfo.fechaString}
+                                    onClick={() => setReserva({ ...reserva, fecha: diaInfo.fechaString, hora: '' })}
+                                    className={`shrink-0 snap-center px-6 py-4 rounded-2xl border cursor-pointer text-center transition-all duration-300 ${
+                                        activo 
+                                        ? 'bg-zinc-900 dark:bg-white border-transparent text-white dark:text-zinc-900 shadow-lg scale-105' 
+                                        : 'bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border-zinc-200/50 dark:border-white/5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-white/90 dark:hover:bg-zinc-800'
+                                    }`}
                                 >
                                     <span className="block text-sm font-black uppercase tracking-widest">{diaInfo.display}</span>
                                 </div>
-                            ))}
+                            )})}
                         </div>
 
-                        {/* GRILLA DE HORAS */}
-                        {reserva.fecha && ( //[cite: 8]
+                        {reserva.fecha && (
                             <div className="mt-4 animate-fadeIn">
                                 {buscandoTurnos ? (
                                     <div className="py-12 flex flex-col items-center justify-center">
-                                        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                                        <p className="text-zinc-500 text-sm mt-4 font-medium animate-pulse">Buscando disponibilidad...</p>
+                                        <div className="w-8 h-8 border-4 border-zinc-900 dark:border-white border-t-transparent rounded-full animate-spin"></div>
                                     </div>
                                 ) : turnosDelDia.length > 0 ? (
-                                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                                        {turnosDelDia.map(turno => (
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                        {turnosDelDia.map(turno => {
+                                            const activo = reserva.hora === turno.hora;
+                                            return (
                                             <div
-                                                key={turno.hora} //[cite: 8]
-                                                onClick={() => !turno.ocupado && seleccionarHorario(reserva.fecha, turno.hora)} //[cite: 8]
+                                                key={turno.hora}
+                                                onClick={() => !turno.ocupado && seleccionarHorario(reserva.fecha, turno.hora)}
                                                 className={`py-3 rounded-xl border text-center font-bold transition-all duration-200 flex flex-col items-center justify-center
-                                                    ${turno.ocupado //[cite: 8]
-                                                        ? 'bg-zinc-950/40 border-white/5 text-zinc-600 cursor-not-allowed opacity-50'  //[cite: 8]
-                                                        : reserva.hora === turno.hora //[cite: 8]
-                                                            ? 'bg-orange-500 text-black border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.4)] cursor-pointer active:scale-95' //[cite: 8]
-                                                            : 'bg-zinc-900 border-white/10 text-zinc-300 hover:bg-zinc-800 hover:border-orange-500/30 cursor-pointer active:scale-95' //[cite: 8]
-                                                    }`} //[cite: 8]
+                                                    ${turno.ocupado
+                                                        ? 'bg-zinc-100 dark:bg-zinc-950/40 border-transparent text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-60'
+                                                        : activo
+                                                            ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 border-transparent shadow-lg scale-105 cursor-pointer'
+                                                            : 'bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border-zinc-200/50 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:border-zinc-900 dark:hover:border-white hover:text-zinc-900 dark:hover:text-white cursor-pointer active:scale-95'
+                                                    }`}
                                             >
-                                                <span className="text-lg">{turno.hora}</span>
-                                                {turno.ocupado && <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-black">Reservado</span>}
+                                                <span className="text-base sm:text-lg">{turno.hora}</span>
+                                                {turno.ocupado && <span className="text-[9px] uppercase tracking-wider text-zinc-400 font-black">Reservado</span>}
                                             </div>
-                                        ))}
+                                        )})}
                                     </div>
                                 ) : (
-                                    <div className="p-8 text-center bg-zinc-900/50 border border-white/5 rounded-3xl border-dashed">
-                                        <Clock className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-                                        <h4 className="text-white font-bold">Sin turnos</h4>
-                                        <p className="text-zinc-500 text-sm mt-1 max-w-sm mx-auto">Este día ya está completamente reservado o el servicio no entra en el horario restante.</p>
+                                    <div className="p-8 text-center bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 rounded-3xl border-dashed">
+                                        <Clock className="w-10 h-10 text-zinc-400 mx-auto mb-3" />
+                                        <h4 className="text-zinc-900 dark:text-white font-bold">Sin turnos</h4>
+                                        <p className="text-zinc-500 text-sm mt-1 max-w-sm mx-auto">El servicio excede el horario restante o el día está completo.</p>
                                     </div>
                                 )}
                             </div>
@@ -354,6 +368,9 @@ export const WizardReservasPage: React.FC = () => {
         );
     };
 
+    // =========================================================================
+    // PASO 4: CONFIRMACIÓN Y PAGO
+    // =========================================================================
     const renderPaso4 = () => {
         const precio = reserva.servicio?.precio || 0;
         const sena = precio * 0.3;
@@ -383,46 +400,49 @@ export const WizardReservasPage: React.FC = () => {
         };
 
         return (
-            <div className="space-y-8 animate-fadeIn relative">
-                <h2 className="text-2xl font-black text-white flex items-center gap-2"><CheckCircle2 className="w-6 h-6 text-orange-500" /> 4. Confirmación y Pago</h2>
+            <div className="space-y-6 animate-fadeIn pb-4">
+                <h2 className="text-xl sm:text-2xl font-black text-zinc-900 dark:text-white flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-zinc-900 dark:text-white" /> 4. Confirmación
+                </h2>
 
-                <div className="relative p-8 rounded-3xl bg-zinc-900/80 backdrop-blur-md border border-white/10 shadow-2xl overflow-hidden">
-                    <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-zinc-950 rounded-full border-r border-white/10"></div>
-                    <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-zinc-950 rounded-full border-l border-white/10"></div>
+                <div className="relative p-6 sm:p-8 rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/50 dark:border-white/10 shadow-2xl overflow-hidden">
+                    {/* Recortes tipo "Ticket" */}
+                    <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f4f4f5] dark:bg-[#09090B] rounded-full border-r border-zinc-200/50 dark:border-white/10"></div>
+                    <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f4f4f5] dark:bg-[#09090B] rounded-full border-l border-zinc-200/50 dark:border-white/10"></div>
 
-                    <div className="flex justify-between items-center pb-6 border-b border-dashed border-white/20">
+                    <div className="flex justify-between items-center pb-6 border-b border-dashed border-zinc-300 dark:border-white/20">
                         <div>
-                            <p className="text-xs font-bold text-orange-500 uppercase tracking-widest mb-1">Servicio Seleccionado</p>
-                            <p className="font-black text-white text-2xl">{reserva.servicio?.nombre}</p>
+                            <p className="text-[10px] sm:text-xs font-bold text-zinc-500 uppercase tracking-widest mb-1">Servicio Seleccionado</p>
+                            <p className="font-black text-zinc-900 dark:text-white text-xl sm:text-2xl">{reserva.servicio?.nombre}</p>
                         </div>
-                        <p className="font-black text-3xl text-orange-400">${precio}</p>
+                        <p className="font-black text-2xl sm:text-3xl text-zinc-900 dark:text-white">${precio}</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6 pt-6">
+                    <div className="grid grid-cols-2 gap-4 sm:gap-6 pt-6">
                         <div>
-                            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-1">
+                            <p className="text-[10px] sm:text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-1">
                                 <User className="w-3.5 h-3.5" /> Profesional
                             </p>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3">
                                 <img
-                                    src={reserva.profesional?.avatar || `https://ui-avatars.com/api/?name=${reserva.profesional?.nombre}+${reserva.profesional?.apellido}&background=27272a&color=f97316`}
+                                    src={reserva.profesional?.avatar || `https://ui-avatars.com/api/?name=${reserva.profesional?.nombre}+${reserva.profesional?.apellido}&background=000&color=fff`}
                                     alt={reserva.profesional?.nombre}
-                                    className="w-10 h-10 rounded-full object-cover border border-zinc-700 shadow-sm"
+                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-zinc-300 dark:border-zinc-700 shadow-sm "
                                 />
                                 <div>
-                                    <p className="font-bold text-white text-sm leading-tight">{reserva.profesional?.nombre} {reserva.profesional?.apellido}</p>
-                                    <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">
+                                    <p className="font-bold text-zinc-900 dark:text-white text-xs sm:text-sm leading-tight">{reserva.profesional?.nombre}</p>
+                                    <p className="text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">
                                         {reserva.profesional?.tituloProfesional || 'Estilista'}
                                     </p>
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-1">
+                            <p className="text-[10px] sm:text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-1">
                                 <CalendarIcon className="w-3.5 h-3.5" /> Cuándo
                             </p>
-                            <p className="font-bold text-white text-lg mt-1">{fechaFormateada}</p>
-                            <p className="text-sm text-zinc-400 font-medium">{reserva.hora} hs</p>
+                            <p className="font-bold text-zinc-900 dark:text-white text-base sm:text-lg mt-1">{fechaFormateada}</p>
+                            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-medium">{reserva.hora} hs</p>
                         </div>
                     </div>
                 </div>
@@ -431,22 +451,22 @@ export const WizardReservasPage: React.FC = () => {
                     <button
                         onClick={() => setMostrarModalLogin(true)}
                         disabled={cargando}
-                        className="w-full py-5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 disabled:opacity-50 text-black font-black uppercase text-sm tracking-widest rounded-2xl transition-all hover:-translate-y-1 shadow-[0_10px_30px_rgba(249,115,22,0.3)] flex items-center justify-center gap-2"
+                        className="w-full py-4 sm:py-5 bg-zinc-900 dark:bg-white hover:scale-[1.02] disabled:opacity-50 text-white dark:text-zinc-950 font-black uppercase text-xs sm:text-sm tracking-widest rounded-2xl transition-all shadow-xl flex items-center justify-center gap-2"
                     >
                         {cargando ? 'Procesando...' : 'Iniciar sesión para Reservar'}
                     </button>
                 ) : (
-                    <div className="space-y-5">
-                        <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-4 backdrop-blur-sm">
-                            <ShieldCheck className="w-6 h-6 text-blue-400 shrink-0 mt-0.5" />
-                            <p className="text-sm text-blue-200 leading-relaxed">Aboná una seña del <strong>30% (${sena})</strong> ahora para asegurar tu lugar. El monto restante lo pagás directamente en el local.</p>
+                    <div className="space-y-4">
+                        <div className="p-4 sm:p-5 rounded-2xl bg-zinc-200/50 dark:bg-white/5 border border-zinc-300/50 dark:border-white/10 flex items-start gap-3 backdrop-blur-sm">
+                            <ShieldCheck className="w-5 h-5 text-zinc-900 dark:text-white shrink-0 mt-0.5" />
+                            <p className="text-xs sm:text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">Seña del <strong>30% (${sena})</strong> requerida. El saldo se abona en el local.</p>
                         </div>
                         <button
                             onClick={handleConfirmarReserva}
                             disabled={cargando}
-                            className="w-full py-5 bg-gradient-to-r from-[#009EE3] to-[#0074A6] hover:opacity-90 hover:-translate-y-1 text-white font-black uppercase text-sm tracking-widest rounded-2xl transition-all shadow-[0_10px_30px_rgba(0,158,227,0.3)] flex items-center justify-center gap-2"
+                            className="w-full py-4 sm:py-5 bg-zinc-900 dark:bg-white hover:scale-[1.02] disabled:opacity-50 text-white dark:text-zinc-950 font-black uppercase text-xs sm:text-sm tracking-widest rounded-2xl transition-all shadow-xl flex items-center justify-center gap-2"
                         >
-                            {cargando ? 'Procesando...' : `Pagar Seña ($${sena}) y Confirmar`}
+                            {cargando ? 'Procesando...' : `Abonar $${sena} y Confirmar`}
                         </button>
                     </div>
                 )}
@@ -455,49 +475,54 @@ export const WizardReservasPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen pt-8 pb-24 max-w-3xl mx-auto px-4">
-            <div className="mb-12">
-                {/* 🔥 BOTÓN VOLVER (Naranjita - Ahora arriba) */}
+        // 🔥 MAGIA MOBILE: Contenedor con altura estricta para que funcione como App Nativa.
+        <div className="flex flex-col h-[calc(100dvh-5.5rem)] lg:h-[calc(100vh-7rem)] max-w-3xl mx-auto w-full px-2 sm:px-4">
+            
+            {/* 🔥 HEADER FIJO (Se queda arriba) */}
+            <div className="shrink-0 mb-4 sm:mb-6 pt-2">
                 <button
                     onClick={() => pasoActual > 1 ? retroceder() : navigate('/servicios')}
-                    className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 text-xs font-bold uppercase tracking-widest transition-all mb-8 cursor-pointer"
+                    className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/60 dark:bg-zinc-900/40 text-zinc-900 dark:text-white border border-zinc-200/50 dark:border-white/10 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all mb-4 sm:mb-6 cursor-pointer"
                 >
-                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Volver
+                    <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> Volver
                 </button>
-                <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tight">Reservar Turno.</h1>
+                
+                <h1 className="text-3xl sm:text-4xl font-black text-zinc-900 dark:text-white tracking-tight transition-colors">Reserva.</h1>
 
-                <div className="flex gap-2 mt-8">
+                <div className="flex gap-2 mt-4 sm:mt-6">
                     {[1, 2, 3, 4].map(paso => (
-                        <div key={paso} className="h-2 flex-1 rounded-full bg-zinc-800 overflow-hidden relative">
-                            <div className={`absolute top-0 left-0 h-full w-full bg-gradient-to-r from-orange-500 to-amber-500 transition-transform duration-700 ease-in-out ${paso <= pasoActual ? 'translate-x-0' : '-translate-x-full'}`} />
+                        <div key={paso} className="h-1.5 sm:h-2 flex-1 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden relative">
+                            <div className={`absolute top-0 left-0 h-full w-full bg-zinc-900 dark:bg-white transition-transform duration-700 ease-in-out ${paso <= pasoActual ? 'translate-x-0' : '-translate-x-full'}`} />
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="relative min-h-[400px]">
+            {/* 🔥 BODY SCROLLEABLE (Acá pasa la magia del scroll interno) */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide relative pb-4">
                 {pasoActual === 1 && renderPaso1()}
                 {pasoActual === 2 && renderPaso2()}
                 {pasoActual === 3 && renderPaso3()}
                 {pasoActual === 4 && renderPaso4()}
             </div>
 
-            <div className="mt-16 flex justify-between items-center border-t border-white/5 pt-8">
-                {/* 🔥 BOTÓN CANCELAR (Rojito suave - Ahora abajo) */}
+            {/* 🔥 FOOTER FIJO (Se queda abajo clavado) */}
+           <div className="shrink-0 pt-4 pb-2 mt-2 border-t border-zinc-200/50 dark:border-white/10 flex justify-between items-center transition-colors z-10">
                 <button
                     onClick={() => {
                         sessionStorage.removeItem('kathara_reserva_pendiente');
                         navigate('/servicios');
                     }}
-                    className="px-5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 font-bold text-sm transition-all active:scale-95"
+                    className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 text-zinc-900 dark:text-white hover:bg-white/90 dark:hover:bg-zinc-800 font-bold text-xs sm:text-sm transition-all shadow-sm active:scale-95"
                 >
                     Cancelar
                 </button>
 
-                <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase tracking-widest text-zinc-500">Paso</span>
-                    <span className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center font-black text-sm border border-orange-500/20">{pasoActual}</span>
-                    <span className="text-xs font-black uppercase tracking-widest text-zinc-500">de 4</span>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                    {/* Le agregamos drop-shadow al texto por si la foto de fondo es medio ruidosa ahí */}
+                    <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white drop-shadow-md">Paso</span>
+                    <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-black text-xs sm:text-sm shadow-xl transition-colors">{pasoActual}</span>
+                    <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white drop-shadow-md">de 4</span>
                 </div>
             </div>
 
@@ -510,6 +535,6 @@ export const WizardReservasPage: React.FC = () => {
                     hora: reserva.hora
                 } : null}
             />
-        </div >
+        </div>
     );
 };

@@ -22,6 +22,7 @@ import AdminLayout from './layouts/AdminLayout';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import { ScrollToTop } from './components/ScrollToTop';
+import { AparienciaAdminPage } from './pages/admin/admin-apariencia/AparienciaAdminPage';
 
 function App() {
 
@@ -59,6 +60,7 @@ function App() {
               <Route path="staff" element={<StaffAdminPage />} />
               <Route path="turnos" element={<TurnosAdminPage />} />
               <Route path="clientes" element={<ClientesAdminPage />} />
+              <Route path="apariencia" element={<AparienciaAdminPage />} />
               <Route path="/admin/perfil" element={<PerfilPage />} />
               <Route path="/admin/portafolio" element={<PortafolioAdminPage />} />
             </Route>

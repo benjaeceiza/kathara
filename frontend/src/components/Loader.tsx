@@ -7,27 +7,33 @@ interface LoaderProps {
 
 export const Loader: React.FC<LoaderProps> = ({ tipoLayout = 'completo' }) => {
     const [cargando, setCargando] = useState(true);
-    const [esCargaInicial, setEsCargaInicial] = useState(true);
+    const [primeraCarga, setPrimeraCarga] = useState(true);
 
     useLayoutEffect(() => {
         setCargando(true);
-        const tiempo = esCargaInicial ? 1400 : 450;
-
+        
         const timer = setTimeout(() => {
             setCargando(false);
-            if (esCargaInicial) setEsCargaInicial(false);
-        }, tiempo);
+            // 🔥 CLAVE: Esperamos 700ms (lo que dura la animación de desvanecerse)
+            // ANTES de decirle al layout que ya pasó la primera carga.
+            setTimeout(() => setPrimeraCarga(false), 700);
+        }, 1400);
 
         return () => clearTimeout(timer);
-    // 🔥 2. ARRAY VACÍO: Esto garantiza que la ruedita SOLO salga la primera vez que entrás
     }, []); 
 
-    // 🔥 3. LA MAGIA DEL CSS: Dependiendo de dónde lo llamemos, esquiva el menú lateral
-    let clasesPosicion = 'fixed inset-0'; // Por defecto cubre toda la pantalla
-    if (tipoLayout === 'admin') {
-        clasesPosicion = 'fixed top-0 right-0 bottom-0 left-0 md:left-64'; // Esquiva los 64 del Admin
-    } else if (tipoLayout === 'cliente') {
-        clasesPosicion = 'fixed top-0 right-0 bottom-0 left-0 lg:left-64'; // Esquiva los 64 del Cliente
+    // 🔥 LA MAGIA DE LA SINCRONIZACIÓN
+    // Mientras sea la primera carga (incluso mientras se está desvaneciendo),
+    // forzamos el 'inset-0' para que tape TODA la pantalla, incluyendo el Sidebar.
+    // Así escondemos el parpadeo del fondo detrás del menú.
+    let clasesPosicion = 'fixed inset-0'; 
+    
+    if (!primeraCarga) {
+        if (tipoLayout === 'admin') {
+            clasesPosicion = 'fixed top-0 right-0 bottom-0 left-0 md:left-64'; 
+        } else if (tipoLayout === 'cliente') {
+            clasesPosicion = 'fixed top-0 right-0 bottom-0 left-0 lg:left-64'; 
+        }
     }
 
     return (
@@ -51,44 +57,46 @@ export const Loader: React.FC<LoaderProps> = ({ tipoLayout = 'completo' }) => {
         }
       `}</style>
 
-            {/* 🔥 4. APLICAMOS LAS CLASES INTELIGENTES */}
             <div
-                className={`${clasesPosicion} z-[100] bg-[#09090B] flex flex-col items-center justify-center transition-opacity ease-in-out ${cargando
-                        ? 'opacity-100 pointer-events-auto duration-0'
-                        : 'opacity-0 pointer-events-none duration-500'
+                // El z-[100] asegura que quede por encima del Sidebar que tiene z-50
+                className={`${clasesPosicion} z-[100] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl flex flex-col items-center justify-center transition-opacity ease-in-out duration-700 ${cargando
+                        ? 'opacity-100 pointer-events-auto'
+                        : 'opacity-0 pointer-events-none'
                     }`}
             >
-                <div className="absolute w-64 h-64 bg-orange-500/10 rounded-full blur-[120px] animate-pulse pointer-events-none"></div>
+                <div className="absolute w-64 h-64 bg-zinc-400/20 dark:bg-white/5 rounded-full blur-[100px] animate-pulse pointer-events-none"></div>
 
                 <div className="relative z-10 flex flex-col items-center space-y-8">
+                    
                     <div className="relative w-28 h-28 flex items-center justify-center">
-                        <svg className="w-full h-full overflow-visible drop-shadow-[0_0_12px_rgba(249,115,22,0.3)]" viewBox="0 0 100 100">
-                            <g className="anim-hoja-arriba">
-                                <circle cx="25" cy="75" r="11" stroke="#F97316" strokeWidth="2.5" fill="none" />
-                                <path d="M33 67 L47 53 L85 15" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                                <path d="M53 47 L85 15" stroke="#FBBF24" strokeWidth="1.5" strokeLinecap="round" fill="none" className="opacity-80" />
+                        <svg className="w-full h-full overflow-visible drop-shadow-xl" viewBox="0 0 100 100">
+                            <g className="anim-hoja-arriba text-zinc-900 dark:text-white">
+                                <circle cx="25" cy="75" r="11" stroke="currentColor" strokeWidth="2.5" fill="none" />
+                                <path d="M33 67 L47 53 L85 15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                                <path d="M53 47 L85 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" className="text-zinc-400 dark:text-zinc-500 opacity-80" />
                             </g>
-                            <g className="anim-hoja-abajo">
-                                <circle cx="25" cy="25" r="11" stroke="#F97316" strokeWidth="2.5" fill="none" />
-                                <path d="M33 33 L47 47 L85 85" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"fill="none" />
-                                <path d="M53 53 L85 85" stroke="#FBBF24" strokeWidth="1.5" strokeLinecap="round" fill="none" className="opacity-80" />
+                            <g className="anim-hoja-abajo text-zinc-900 dark:text-white">
+                                <circle cx="25" cy="25" r="11" stroke="currentColor" strokeWidth="2.5" fill="none" />
+                                <path d="M33 33 L47 47 L85 85" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+                                <path d="M53 53 L85 85" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" className="text-zinc-400 dark:text-zinc-500 opacity-80" />
                             </g>
-                            <circle cx="50" cy="50" r="4" stroke="#FFFFFF" strokeWidth="2" fill="#09090B" className="drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
-                            <circle cx="50" cy="50" r="1.5" fill="#F97316" />
+                            
+                            <circle cx="50" cy="50" r="4" strokeWidth="2" className="stroke-zinc-900 dark:stroke-white fill-white dark:fill-zinc-900 drop-shadow-md" />
+                            <circle cx="50" cy="50" r="1.5" className="fill-zinc-900 dark:fill-white" />
                         </svg>
                     </div>
 
                     <div className="text-center space-y-2.5">
-                        <span className="font-black text-2xl tracking-[0.25em] text-white uppercase block leading-none pl-2">
+                        <span className="font-black text-2xl tracking-[0.25em] text-zinc-900 dark:text-white uppercase block leading-none pl-2 transition-colors duration-700">
                             Kathara
                         </span>
-                        <p className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-zinc-500 pl-1 animate-pulse">
-                            {esCargaInicial ? "Barber Studio & VIP Club" : "Cargando..."}
+                        <p className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 pl-1 animate-pulse transition-colors duration-700">
+                            {primeraCarga ? "Barber Studio & VIP Club" : "Cargando..."}
                         </p>
                     </div>
 
-                    <div className="w-24 h-[2px] bg-zinc-900 rounded-full overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-r from-transparent via-orange-500 to-transparent animate-[translate-x-full_1s_ease-in-out_infinite]"></div>
+                    <div className="w-24 h-[2px] bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden transition-colors duration-700">
+                        <div className="w-full h-full bg-gradient-to-r from-transparent via-zinc-900 dark:via-white to-transparent animate-[translate-x-full_1s_ease-in-out_infinite]"></div>
                     </div>
                 </div>
             </div>
