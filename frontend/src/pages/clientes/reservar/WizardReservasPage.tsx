@@ -10,7 +10,7 @@ import { confirmarReserva, obtenerTurnosOcupados } from '../../../services/turno
 import { getServicios } from '../../../services/servicios.service';
 import { getStaff } from '../../../services/staff.service';
 import ModalReservaExitosa from '../../../components/modals/ModalReservaExitosa';
-import { WizardSkeleton } from '../../../components/skeletons/WizardSkeleton'; // 🔥 Importamos el esqueleto
+import { WizardSkeleton } from '../../../components/skeletons/WizardSkeleton';
 
 export const WizardReservasPage: React.FC = () => {
     const [searchParams] = useSearchParams();
@@ -47,7 +47,6 @@ export const WizardReservasPage: React.FC = () => {
     useEffect(() => {
         const fetchDatosIniciales = async () => {
             try {
-                // Simulamos un delay mínimo para que aprecies el skeleton premium
                 await new Promise(r => setTimeout(r, 800)); 
                 const [serviciosData, staffData] = await Promise.all([
                     getServicios(),
@@ -124,7 +123,6 @@ export const WizardReservasPage: React.FC = () => {
     const seleccionarStaff = (prof: any) => { setReserva({ ...reserva, profesional: prof }); avanzar(); };
     const seleccionarHorario = (fecha: string, hora: string) => { setReserva({ ...reserva, fecha, hora }); avanzar(); };
 
-    // 🔥 SI ESTÁ CARGANDO, MOSTRAMOS EL SKELETON DIRECTAMENTE
     if (cargandoDatos) return <WizardSkeleton />;
 
     // =========================================================================
@@ -142,7 +140,6 @@ export const WizardReservasPage: React.FC = () => {
                         <div
                             key={srv._id}
                             onClick={() => seleccionarServicio(srv)}
-                            // 🔥 ESTILO GLASSMORPHISM Y ALTO CONTRASTE
                             className={`group p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all duration-300 flex justify-between items-center ${
                                 activo 
                                 ? 'bg-zinc-900 dark:bg-white border-transparent text-white dark:text-zinc-900 shadow-xl scale-[1.01]' 
@@ -198,10 +195,7 @@ export const WizardReservasPage: React.FC = () => {
                         </p>
                     </div>
                 ) : (
-                    // 🔥 GRID DE COLUMNAS (1 EN MÓVIL, 2 EN PC) PERO CON FLEX-ROW INTERNO
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        
-                        {/* BOTÓN SIN PREFERENCIA */}
                         <div onClick={() => seleccionarStaff({ ...staffFiltrado[0], nombre: "Sin Preferencia", sinPreferencia: true })} 
                              className="group p-4 rounded-2xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 hover:border-zinc-900 dark:hover:border-white cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex items-center gap-4">
                             <div className="w-14 h-14 shrink-0 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center border-2 border-dashed border-zinc-400 dark:border-zinc-500 group-hover:border-zinc-900 dark:group-hover:border-white transition-colors">
@@ -213,7 +207,6 @@ export const WizardReservasPage: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* LISTA DE STAFF EN FORMATO FILA */}
                         {staffFiltrado.map(prof => {
                             const activo = reserva.profesional?._id === prof._id;
                             return (
@@ -246,7 +239,7 @@ export const WizardReservasPage: React.FC = () => {
     };
 
     // =========================================================================
-    // PASO 3: FECHAS Y HORARIOS
+    // PASO 3: FECHAS Y HORARIOS (AHORA CON SOPORTE PARA TURNO CORTADO)
     // =========================================================================
     const renderPaso3 = () => {
         const nombreDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -270,30 +263,49 @@ export const WizardReservasPage: React.FC = () => {
         const diaSeleccionado = diasDisponibles.find(d => d.fechaString === reserva.fecha);
 
         if (diaSeleccionado && diaSeleccionado.configDia && !buscandoTurnos) {
-           const duracionServicio = parseInt(reserva.servicio?.duracionMinutos, 10) || 30;
-            const [hIni, mIni] = diaSeleccionado.configDia.horaInicio.split(':').map(Number);
-            const [hFin, mFin] = diaSeleccionado.configDia.horaFin.split(':').map(Number);
+            const duracionServicio = parseInt(reserva.servicio?.duracionMinutos, 10) || 30;
 
-            let horaActual = new Date();
-            horaActual.setHours(hIni, mIni, 0, 0);
+            // 🔥 ARMAMOS LOS RANGOS A EVALUAR (Soporte Turno Cortado)
+            const rangosHorarios = [
+                { inicio: diaSeleccionado.configDia.horaInicio, fin: diaSeleccionado.configDia.horaFin }
+            ];
 
-            const horaLimite = new Date();
-            horaLimite.setHours(hFin, mFin, 0, 0);
-
-            while (horaActual.getTime() + (duracionServicio * 60000) <= horaLimite.getTime()) {
-                const horaString = horaActual.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
-                const horaFinSlot = new Date(horaActual.getTime() + (duracionServicio * 60000));
-
-                const estaOcupado = turnosOcupados.some((rangoOcupado: any) => {
-                    if (typeof rangoOcupado === 'string') return rangoOcupado === horaString;
-                    const inicioOcupado = new Date(rangoOcupado.inicio);
-                    const finOcupado = new Date(rangoOcupado.fin);
-                    return (horaActual < finOcupado) && (horaFinSlot > inicioOcupado);
+            // Si está partido, le inyectamos la tarde también
+            if (diaSeleccionado.configDia.turnoCortado && diaSeleccionado.configDia.horaInicio2 && diaSeleccionado.configDia.horaFin2) {
+                rangosHorarios.push({
+                    inicio: diaSeleccionado.configDia.horaInicio2,
+                    fin: diaSeleccionado.configDia.horaFin2
                 });
-
-                turnosDelDia.push({ hora: horaString, ocupado: estaOcupado });
-                horaActual.setMinutes(horaActual.getMinutes() + duracionServicio);
             }
+
+            // Procesamos todos los rangos que tenga el día
+            rangosHorarios.forEach(rango => {
+                if (!rango.inicio || !rango.fin) return;
+
+                const [hIni, mIni] = rango.inicio.split(':').map(Number);
+                const [hFin, mFin] = rango.fin.split(':').map(Number);
+
+                let horaActual = new Date();
+                horaActual.setHours(hIni, mIni, 0, 0);
+
+                const horaLimite = new Date();
+                horaLimite.setHours(hFin, mFin, 0, 0);
+
+                while (horaActual.getTime() + (duracionServicio * 60000) <= horaLimite.getTime()) {
+                    const horaString = horaActual.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    const horaFinSlot = new Date(horaActual.getTime() + (duracionServicio * 60000));
+
+                    const estaOcupado = turnosOcupados.some((rangoOcupado: any) => {
+                        if (typeof rangoOcupado === 'string') return rangoOcupado === horaString;
+                        const inicioOcupado = new Date(rangoOcupado.inicio);
+                        const finOcupado = new Date(rangoOcupado.fin);
+                        return (horaActual < finOcupado) && (horaFinSlot > inicioOcupado);
+                    });
+
+                    turnosDelDia.push({ hora: horaString, ocupado: estaOcupado });
+                    horaActual.setMinutes(horaActual.getMinutes() + duracionServicio);
+                }
+            });
         }
 
         return (
@@ -406,7 +418,6 @@ export const WizardReservasPage: React.FC = () => {
                 </h2>
 
                 <div className="relative p-6 sm:p-8 rounded-3xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-zinc-200/50 dark:border-white/10 shadow-2xl overflow-hidden">
-                    {/* Recortes tipo "Ticket" */}
                     <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f4f4f5] dark:bg-[#09090B] rounded-full border-r border-zinc-200/50 dark:border-white/10"></div>
                     <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-[#f4f4f5] dark:bg-[#09090B] rounded-full border-l border-zinc-200/50 dark:border-white/10"></div>
 
@@ -475,10 +486,8 @@ export const WizardReservasPage: React.FC = () => {
     };
 
     return (
-        // 🔥 MAGIA MOBILE: Contenedor con altura estricta para que funcione como App Nativa.
         <div className="flex flex-col h-[calc(100dvh-5.5rem)] lg:h-[calc(100vh-7rem)] max-w-3xl mx-auto w-full px-2 sm:px-4">
             
-            {/* 🔥 HEADER FIJO (Se queda arriba) */}
             <div className="shrink-0 mb-4 sm:mb-6 pt-2">
                 <button
                     onClick={() => pasoActual > 1 ? retroceder() : navigate('/servicios')}
@@ -498,7 +507,6 @@ export const WizardReservasPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* 🔥 BODY SCROLLEABLE (Acá pasa la magia del scroll interno) */}
             <div className="flex-1 overflow-y-auto scrollbar-hide relative pb-4">
                 {pasoActual === 1 && renderPaso1()}
                 {pasoActual === 2 && renderPaso2()}
@@ -506,7 +514,6 @@ export const WizardReservasPage: React.FC = () => {
                 {pasoActual === 4 && renderPaso4()}
             </div>
 
-            {/* 🔥 FOOTER FIJO (Se queda abajo clavado) */}
            <div className="shrink-0 pt-4 pb-2 mt-2 border-t border-zinc-200/50 dark:border-white/10 flex justify-between items-center transition-colors z-10">
                 <button
                     onClick={() => {
@@ -519,7 +526,6 @@ export const WizardReservasPage: React.FC = () => {
                 </button>
 
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                    {/* Le agregamos drop-shadow al texto por si la foto de fondo es medio ruidosa ahí */}
                     <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white drop-shadow-md">Paso</span>
                     <span className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center font-black text-xs sm:text-sm shadow-xl transition-colors">{pasoActual}</span>
                     <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white drop-shadow-md">de 4</span>

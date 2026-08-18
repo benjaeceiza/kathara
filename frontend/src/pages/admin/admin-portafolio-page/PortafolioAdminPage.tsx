@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, PlusCircle, Sparkles, Save } from 'lucide-react';
+import { Briefcase, PlusCircle, Save } from 'lucide-react';
 import {
     obtenerMiPortafolio,
     crearMiPortafolio,
@@ -12,7 +12,6 @@ import {
 import { useAuthStore } from '../../../store/authStore';
 import { Toast } from '../../../components/ui/Toast';
 
-// IMPORTAMOS TUS COMPONENTES HIJOS
 import PortafolioHeader from './PortafolioHeader';
 import PortafolioInfoRedes from './PortafolioInfoRedes';
 import PortafolioGaleria from './PortafolioGaleria';
@@ -35,15 +34,15 @@ export default function PortafolioAdminPage() {
     const [editandoInfo, setEditandoInfo] = useState(false);
     const [toast, setToast] = useState({ visible: false, mensaje: '', tipo: 'success' as 'success' | 'error' });
 
-    // Array maestro de horarios
+    // 🔥 Horarios por defecto ahora soportan Turno Cortado
     const horariosPorDefecto = [
-        { dia: 'Lunes', activo: false, horaInicio: '09:00', horaFin: '20:00' },
-        { dia: 'Martes', activo: true, horaInicio: '10:00', horaFin: '19:00' },
-        { dia: 'Miércoles', activo: true, horaInicio: '10:00', horaFin: '19:00' },
-        { dia: 'Jueves', activo: true, horaInicio: '10:00', horaFin: '19:00' },
-        { dia: 'Viernes', activo: true, horaInicio: '09:00', horaFin: '21:00' },
-        { dia: 'Sábado', activo: true, horaInicio: '09:00', horaFin: '21:00' },
-        { dia: 'Domingo', activo: false, horaInicio: '10:00', horaFin: '14:00' }
+        { dia: 'Lunes', activo: false, turnoCortado: false, horaInicio: '09:00', horaFin: '21:00', horaInicio2: '16:00', horaFin2: '21:00' },
+        { dia: 'Martes', activo: true, turnoCortado: false, horaInicio: '09:00', horaFin: '21:00', horaInicio2: '16:00', horaFin2: '21:00' },
+        { dia: 'Miércoles', activo: true, turnoCortado: false, horaInicio: '09:00', horaFin: '21:00', horaInicio2: '16:00', horaFin2: '21:00' },
+        { dia: 'Jueves', activo: true, turnoCortado: false, horaInicio: '09:00', horaFin: '21:00', horaInicio2: '16:00', horaFin2: '21:00' },
+        { dia: 'Viernes', activo: true, turnoCortado: false, horaInicio: '09:00', horaFin: '21:00', horaInicio2: '16:00', horaFin2: '21:00' },
+        { dia: 'Sábado', activo: true, turnoCortado: false, horaInicio: '09:00', horaFin: '21:00', horaInicio2: '16:00', horaFin2: '21:00' },
+        { dia: 'Domingo', activo: false, turnoCortado: false, horaInicio: '09:00', horaFin: '13:00', horaInicio2: '16:00', horaFin2: '21:00' }
     ];
 
     const [formData, setFormData] = useState({
@@ -88,7 +87,13 @@ export default function PortafolioAdminPage() {
                     instagram: data.redesProfesionales?.instagram || '',
                     whatsapp: data.peluquero?.telefono || data.redesProfesionales?.whatsapp || usuario?.telefono || '',
                     especialidades: skillsArray.join(', '),
-                    horarios: (data.peluquero?.horarios?.length > 0) ? data.peluquero.horarios : horariosPorDefecto,
+                    // 🔥 Mapeamos para asegurar que no tire error si un horario viejo no tenía "turnoCortado"
+                    horarios: (data.peluquero?.horarios?.length > 0) ? data.peluquero.horarios.map((h:any) => ({
+                        ...h, 
+                        turnoCortado: h.turnoCortado || false,
+                        horaInicio2: h.horaInicio2 || '16:00',
+                        horaFin2: h.horaFin2 || '21:00'
+                    })) : horariosPorDefecto,
                     serviciosSeleccionados: data.serviciosQueRealiza || []
                 });
 
@@ -169,7 +174,7 @@ export default function PortafolioAdminPage() {
             setSubiendoPortada(true);
             const actualizado = await subirFotoPortada(e.target.files[0]);
             setPortafolio(actualizado);
-            setToast({ visible: true, mensaje: '¡Portada actualizada!', tipo: 'success' });
+            setToast({ visible: true, mensaje: '¡Fondo actualizado!', tipo: 'success' });
         } catch (error: any) { setToast({ visible: true, mensaje: error.message, tipo: 'error' }); }
         finally { setSubiendoPortada(false); }
     };
@@ -216,15 +221,12 @@ export default function PortafolioAdminPage() {
                 <div className="w-24 h-24 bg-orange-500/10 rounded-full flex items-center justify-center mb-6 relative border border-orange-500/20 shadow-[0_0_30px_rgba(249,115,22,0.15)]">
                     <Briefcase className="w-12 h-12 text-orange-500 relative z-10" />
                 </div>
-
                 <h1 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight">
                     Tu Vitrina <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-500">Profesional</span>
                 </h1>
-
                 <p className="text-zinc-400 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
                     Creá tu portafolio personalizado para mostrar tus mejores cortes, configurar tus servicios y dejar que los clientes vean tu estilo único.
                 </p>
-
                 <button
                     onClick={handleCrearPortafolio}
                     disabled={creando}
@@ -248,8 +250,6 @@ export default function PortafolioAdminPage() {
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 animate-fadeIn pb-32">
-
-            {/* ENCABEZADO */}
             <PortafolioHeader
                 portafolio={portafolio} usuario={usuario} formData={formData}
                 editandoInfo={editandoInfo} setEditandoInfo={setEditandoInfo}
@@ -258,17 +258,12 @@ export default function PortafolioAdminPage() {
                 subiendoAvatar={subiendoAvatar} handleSubirAvatar={handleSubirAvatar}
             />
 
-            {/* GRID PRINCIPAL CON items-start PARA EVITAR ESTIRAMIENTOS */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                
-                {/* COLUMNA IZQUIERDA: Info & Redes */}
                 <div className="lg:col-span-1 space-y-6">
                     <PortafolioInfoRedes
                         formData={formData} setFormData={setFormData} editandoInfo={editandoInfo}
                     />
                 </div>
-
-                {/* COLUMNA DERECHA: Galería + Servicios (Agrupados sin huecos) */}
                 <div className="lg:col-span-2 space-y-6">
                     <PortafolioGaleria
                         portafolio={portafolio} setPortafolio={setPortafolio} editandoInfo={editandoInfo}
@@ -276,7 +271,6 @@ export default function PortafolioAdminPage() {
                         handleEliminarImagen={handleEliminarImagen} setToast={setToast}
                         cargarPortafolio={cargarPortafolio}
                     />
-                    
                     <PortafolioServicios
                         serviciosDisponibles={serviciosDisponibles} formData={formData}
                         handleToggleServicio={handleToggleServicio} editandoInfo={editandoInfo}
@@ -284,7 +278,6 @@ export default function PortafolioAdminPage() {
                 </div>
             </div>
 
-            {/* BOTÓN FLOTANTE DE GUARDADO */}
             {editandoInfo && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
                     <button
@@ -296,7 +289,6 @@ export default function PortafolioAdminPage() {
                     </button>
                 </div>
             )}
-
             <Toast mensaje={toast.mensaje} tipo={toast.tipo} visible={toast.visible} onClose={() => setToast({ ...toast, visible: false })} />
         </div>
     );

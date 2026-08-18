@@ -3,9 +3,9 @@ import logo from "../assets/logo.png";
 
 const Footer: React.FC = () => {
   return (
-    // 🔥 Efecto Vidrio en el Footer
-    <footer className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-200/50 dark:border-white/10 pt-16 pb-12 text-zinc-600 dark:text-zinc-400 font-sans mt-20 transition-colors duration-700 relative z-10">
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-zinc-200/50 dark:border-white/10">
+    <footer className="w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-t border-zinc-200/50 dark:border-white/10 pt-16 pb-12 text-zinc-600 dark:text-zinc-400 font-sans mt-20 transition-colors duration-700 relative z-10">
+      
+      <div className="w-full px-6 md:px-12 lg:px-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pb-12 border-b border-zinc-200/50 dark:border-white/10 mx-auto">
         
         {/* Columna 1: Branding */}
         <div className="space-y-4">
@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
               <span className="text-[9px] text-zinc-500 dark:text-zinc-400 font-bold tracking-widest uppercase transition-colors duration-700">Barber Studio</span>
             </div>
           </div>
-          <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+          <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 max-w-sm">
             Cuidado personal elevado al máximo nivel. Cortes de autor, rituales de barba tradicionales y un ambiente diseñado para tu desconexión.
           </p>
         </div>
@@ -29,7 +29,7 @@ const Footer: React.FC = () => {
             <Clock className="w-4 h-4 text-zinc-900 dark:text-white" />
             <span>Horarios de Atención</span>
           </h4>
-          <ul className="text-xs space-y-2 text-zinc-600 dark:text-zinc-400">
+          <ul className="text-xs space-y-2 text-zinc-600 dark:text-zinc-400 max-w-xs">
             <li className="flex justify-between font-medium">
               <span>Martes a Sábados:</span>
               <span className="text-zinc-900 dark:text-white font-bold transition-colors duration-700">10:00 - 20:30 hs</span>
@@ -47,7 +47,7 @@ const Footer: React.FC = () => {
             <MapPin className="w-4 h-4 text-zinc-900 dark:text-white" />
             <span>El Salón</span>
           </h4>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xs">
             Villa Mercedes, San Luis, Argentina. <br />
             <span className="text-zinc-400 dark:text-zinc-500">Estacionamiento exclusivo para clientes del club.</span>
           </p>
@@ -62,13 +62,23 @@ const Footer: React.FC = () => {
           <h4 className="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-widest transition-colors duration-700">
             Comunidad Kathara
           </h4>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400">Seguinos para ver los últimos cortes, tendencias y beneficios del club VIP.</p>
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xs">Seguinos para ver los últimos cortes, tendencias y beneficios del club VIP.</p>
           <div className="flex gap-3 pt-2">
-            <a href="#" className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-zinc-900 dark:hover:border-white text-zinc-900 dark:text-white transition-all">
-              <Share2 className="w-4 h-4" />
+            <a href="#" className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-zinc-900 dark:hover:border-white text-zinc-900 dark:text-white transition-all group shadow-sm">
+              <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
             </a>
-            <a href="#" className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-zinc-900 dark:hover:border-white text-zinc-900 dark:text-white transition-all">
-              <span className="font-black text-xs px-1">IG</span>
+            <a href="#" className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 hover:border-zinc-900 dark:hover:border-white text-zinc-900 dark:text-white transition-all group shadow-sm">
+              {/* 🔥 ÍCONO SVG REAL DE INSTAGRAM CORREGIDO 🔥 */}
+              <svg 
+                className="w-4 h-4 group-hover:scale-110 transition-transform fill-none stroke-current stroke-2" 
+                viewBox="0 0 24 24" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
             </a>
           </div>
         </div>
@@ -76,7 +86,7 @@ const Footer: React.FC = () => {
       </div>
 
       {/* Copyright inferior */}
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500">
+      <div className="w-full px-6 md:px-12 lg:px-24 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-zinc-500 mx-auto">
         <p>© 2026 Kathara Barber Studio. Todos los derechos reservados.</p>
         <p className="flex items-center gap-1">
           <span>Desarrollado con</span>

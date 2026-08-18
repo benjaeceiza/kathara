@@ -1,6 +1,7 @@
 import { useState, useLayoutEffect } from 'react';
+// 🔥 IMPORTAMOS TU LOGO REAL 🔥
+import logo from '../assets/logo.png'; 
 
-// 🔥 1. Le decimos que puede recibir un tipo de layout
 interface LoaderProps {
     tipoLayout?: 'admin' | 'cliente' | 'completo';
 }
@@ -14,18 +15,12 @@ export const Loader: React.FC<LoaderProps> = ({ tipoLayout = 'completo' }) => {
         
         const timer = setTimeout(() => {
             setCargando(false);
-            // 🔥 CLAVE: Esperamos 700ms (lo que dura la animación de desvanecerse)
-            // ANTES de decirle al layout que ya pasó la primera carga.
             setTimeout(() => setPrimeraCarga(false), 700);
         }, 1400);
 
         return () => clearTimeout(timer);
     }, []); 
 
-    // 🔥 LA MAGIA DE LA SINCRONIZACIÓN
-    // Mientras sea la primera carga (incluso mientras se está desvaneciendo),
-    // forzamos el 'inset-0' para que tape TODA la pantalla, incluyendo el Sidebar.
-    // Así escondemos el parpadeo del fondo detrás del menú.
     let clasesPosicion = 'fixed inset-0'; 
     
     if (!primeraCarga) {
@@ -39,63 +34,82 @@ export const Loader: React.FC<LoaderProps> = ({ tipoLayout = 'completo' }) => {
     return (
         <>
             <style>{`
-        @keyframes snipTop {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(22deg); }
+        /* 🔥 Latido suave con brillo NEUTRO/MONOCROMÁTICO para el logo real 🔥 */
+        @keyframes pulseLogo {
+          0%, 100% { 
+            transform: scale(0.95); 
+            filter: drop-shadow(0 0 5px rgba(161, 161, 170, 0.2)); 
+          }
+          50% { 
+            transform: scale(1.05); 
+            filter: drop-shadow(0 0 20px rgba(161, 161, 170, 0.5)); 
+          }
         }
-        @keyframes snipBottom {
-          0%, 100% { transform: rotate(0deg); }
-          50% { transform: rotate(-22deg); }
+        
+        /* 🔥 Órbitas de carga exterior 🔥 */
+        @keyframes spinRing {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
-        .anim-hoja-arriba {
-          animation: snipTop 0.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-          transform-origin: 50% 50%;
+
+        .anim-logo {
+          animation: pulseLogo 2.5s ease-in-out infinite;
         }
-        .anim-hoja-abajo {
-          animation: snipBottom 0.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-          transform-origin: 50% 50%;
+        
+        /* Efecto elástico para el aro principal */
+        .anim-spinner-1 {
+          animation: spinRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+        
+        /* Giro constante y suave para el aro secundario */
+        .anim-spinner-2 {
+          animation: spinRing 3s linear infinite reverse;
         }
       `}</style>
 
             <div
-                // El z-[100] asegura que quede por encima del Sidebar que tiene z-50
                 className={`${clasesPosicion} z-[100] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-2xl flex flex-col items-center justify-center transition-opacity ease-in-out duration-700 ${cargando
                         ? 'opacity-100 pointer-events-auto'
                         : 'opacity-0 pointer-events-none'
                     }`}
             >
-                <div className="absolute w-64 h-64 bg-zinc-400/20 dark:bg-white/5 rounded-full blur-[100px] animate-pulse pointer-events-none"></div>
+                {/* Resplandor de fondo general (ahora es gris/blanco sutil en lugar de naranja) */}
+                <div className="absolute w-72 h-72 bg-zinc-900/5 dark:bg-white/5 rounded-full blur-[80px] animate-pulse pointer-events-none"></div>
 
-                <div className="relative z-10 flex flex-col items-center space-y-8">
+                <div className="relative z-10 flex flex-col items-center space-y-10">
                     
-                    <div className="relative w-28 h-28 flex items-center justify-center">
-                        <svg className="w-full h-full overflow-visible drop-shadow-xl" viewBox="0 0 100 100">
-                            <g className="anim-hoja-arriba text-zinc-900 dark:text-white">
-                                <circle cx="25" cy="75" r="11" stroke="currentColor" strokeWidth="2.5" fill="none" />
-                                <path d="M33 67 L47 53 L85 15" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                                <path d="M53 47 L85 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" className="text-zinc-400 dark:text-zinc-500 opacity-80" />
-                            </g>
-                            <g className="anim-hoja-abajo text-zinc-900 dark:text-white">
-                                <circle cx="25" cy="25" r="11" stroke="currentColor" strokeWidth="2.5" fill="none" />
-                                <path d="M33 33 L47 47 L85 85" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-                                <path d="M53 53 L85 85" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" className="text-zinc-400 dark:text-zinc-500 opacity-80" />
-                            </g>
-                            
-                            <circle cx="50" cy="50" r="4" strokeWidth="2" className="stroke-zinc-900 dark:stroke-white fill-white dark:fill-zinc-900 drop-shadow-md" />
-                            <circle cx="50" cy="50" r="1.5" className="fill-zinc-900 dark:fill-white" />
-                        </svg>
+                    {/* CONTENEDOR DE LA ANIMACIÓN DEL LOGO (Más grande: w-36 h-36) */}
+                    <div className="relative w-36 h-36 flex items-center justify-center drop-shadow-xl">
+                        
+                        {/* Aro Exterior (Blanco o Negro según el tema) */}
+                        <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-zinc-900 border-r-zinc-900/30 dark:border-t-white dark:border-r-white/30 anim-spinner-1"></div>
+                        
+                        {/* Aro Interior (Inverso, más sutil) */}
+                        <div className="absolute inset-3 rounded-full border-[2px] border-transparent border-b-zinc-900 dark:border-b-white opacity-30 anim-spinner-2"></div>
+                        
+                        {/* TU LOGO ORIGINAL (Más grande: w-24 h-24) */}
+                        <div className="w-24 h-24 relative z-10 anim-logo flex items-center justify-center">
+                            <img 
+                                src={logo} 
+                                alt="Logo Kathara" 
+                                /* dark:invert asegura que se ponga blanco si el modo es oscuro */
+                                className="w-full h-full object-contain dark:invert" 
+                            />
+                        </div>
                     </div>
 
+                    {/* TEXTOS */}
                     <div className="text-center space-y-2.5">
                         <span className="font-black text-2xl tracking-[0.25em] text-zinc-900 dark:text-white uppercase block leading-none pl-2 transition-colors duration-700">
                             Kathara
                         </span>
                         <p className="text-[10px] font-mono font-bold uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 pl-1 animate-pulse transition-colors duration-700">
-                            {primeraCarga ? "Barber Studio & VIP Club" : "Cargando..."}
+                            {primeraCarga ? "Kathara Studio" : "Cargando..."}
                         </p>
                     </div>
 
-                    <div className="w-24 h-[2px] bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden transition-colors duration-700">
+                    {/* BARRA DE CARGA INFERIOR */}
+                    <div className="w-24 h-[2px] bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden transition-colors duration-700 mt-2">
                         <div className="w-full h-full bg-gradient-to-r from-transparent via-zinc-900 dark:via-white to-transparent animate-[translate-x-full_1s_ease-in-out_infinite]"></div>
                     </div>
                 </div>

@@ -20,18 +20,19 @@ export default function PortafolioHeader({
 
     return (
         <div className="bg-zinc-900 border border-white/5 rounded-3xl overflow-hidden relative shadow-2xl">
+            {/* 🔥 Acá dice FONDO ahora */}
             <div className="h-48 sm:h-64 w-full bg-zinc-950 relative group">
                 {portafolio?.fotoPortada ? (
-                    <img src={portafolio.fotoPortada} alt="Portada" className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
+                    <img src={portafolio.fotoPortada} alt="Fondo" className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity" />
                 ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center opacity-30">
                         <ImageIcon className="w-12 h-12 text-zinc-500 mb-2" />
-                        <span className="text-sm font-bold text-zinc-500 uppercase">Sin Portada</span>
+                        <span className="text-sm font-bold text-zinc-500 uppercase">Sin Fondo Personalizado</span>
                     </div>
                 )}
                 <input type="file" accept="image/*" className="hidden" ref={portadaInputRef} onChange={handleSubirPortada} />
                 <button onClick={() => portadaInputRef.current?.click()} disabled={subiendoPortada} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 px-6 py-3 bg-black/80 hover:bg-orange-500 hover:text-black text-white rounded-xl font-bold transition-all disabled:opacity-50 border border-white/10 hover:border-transparent shadow-2xl">
-                    {subiendoPortada ? 'Subiendo...' : <><Camera className="w-5 h-5" /> Cambiar Portada</>}
+                    {subiendoPortada ? 'Subiendo...' : <><Camera className="w-5 h-5" /> Cambiar Fondo</>}
                 </button>
             </div>
 

@@ -198,7 +198,7 @@ const ServiciosStaffPage: React.FC = () => {
           {staff.map((b) => (
             <div 
               key={b.id}
-              className="group relative rounded-3xl bg-white/60 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 hover:border-zinc-900 dark:hover:border-white p-5 flex flex-col justify-between transition-all duration-500 ease-out hover:-translate-y-1.5 hover:bg-white/90 dark:hover:bg-zinc-900/70 hover:shadow-xl"
+              className="group relative rounded-3xl bg-white/20 dark:bg-zinc-900/40 backdrop-blur-md border border-zinc-200/50 dark:border-white/10 hover:border-zinc-900 dark:hover:border-white p-5 flex flex-col justify-between transition-all duration-500 ease-out hover:-translate-y-1.5 hover:bg-white/90 dark:hover:bg-zinc-900/70 hover:shadow-xl"
             >
               <div className="space-y-4 relative z-10">
                 <div className="flex items-center gap-4">

@@ -1,11 +1,16 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-// 1. El sub-esquema para los días de trabajo
+// 1. El sub-esquema para los días de trabajo (INTERFAZ)
 export interface IHorario {
   dia: 'Lunes' | 'Martes' | 'Miércoles' | 'Jueves' | 'Viernes' | 'Sábado' | 'Domingo';
   activo: boolean;
   horaInicio: string;
   horaFin: string;
+  // 🔥 NUEVOS CAMPOS: Soporte para Turno Cortado
+  turnoCortado?: boolean;
+  horaInicio2?: string;
+  horaFin2?: string;
+  tipoTurno?: string; // Lo guardamos para que el frontend recuerde qué botón apretó
 }
 
 // 2. La interfaz unificada
@@ -30,9 +35,8 @@ export interface IUsuario extends Document {
   activo: boolean;
   fechaCreacion: Date;
 
-  // 🔥 NUEVO: Referencias
   portafolio?: mongoose.Types.ObjectId;
-  serviciosQueRealiza?: mongoose.Types.ObjectId[]; // Agregamos los servicios acá
+  serviciosQueRealiza?: mongoose.Types.ObjectId[]; 
 }
 
 // 3. El Schema de Mongoose para el Horario
@@ -44,7 +48,13 @@ const HorarioSchema = new Schema({
   },
   activo: { type: Boolean, default: true },
   horaInicio: { type: String, default: '09:00' },
-  horaFin: { type: String, default: '20:00' }
+  horaFin: { type: String, default: '20:00' },
+  
+  // 🔥 NUEVOS CAMPOS EN LA DB
+  turnoCortado: { type: Boolean, default: false },
+  horaInicio2: { type: String, default: '16:00' },
+  horaFin2: { type: String, default: '21:00' },
+  tipoTurno: { type: String, default: 'doble' }
 }, { _id: false });
 
 // 4. El Super-Schema Principal
@@ -58,12 +68,10 @@ const UsuarioSchema: Schema = new Schema({
   telefono: { type: String },
   recibeTurnos: { type: Boolean, default: false },
   especialidades: [{ type: String }],
-  horarios: [{
-    dia: String,
-    activo: Boolean,
-    horaInicio: String,
-    horaFin: String
-  }],
+  
+  // 🔥 AHORA SÍ usa el sub-esquema correctamente en vez de repetirlo inline
+  horarios: [HorarioSchema],
+  
   tituloProfesional: { type: String, default: 'Estilista' },
   turnosCompletados: { type: Number, default: 0 },
   faltas: { type: Number, default: 0 },
@@ -73,7 +81,6 @@ const UsuarioSchema: Schema = new Schema({
   fechaCreacion: { type: Date, default: Date.now },
 
   portafolio: { type: Schema.Types.ObjectId, ref: 'Portafolio' },
-  // 🔥 Guardamos los IDs de los servicios vinculados a la colección "Servicio"
   serviciosQueRealiza: [{ type: Schema.Types.ObjectId, ref: 'Servicio' }]
 });
 
